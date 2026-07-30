@@ -1,0 +1,20 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --extra dev
+      # no network and no API key in here on purpose. these tests are pure functions and
+      # schema checks, so a red build means I broke logic, not that Algolia was down.
+      - run: uv run ruff check .
+      - run: uv run pytest -q

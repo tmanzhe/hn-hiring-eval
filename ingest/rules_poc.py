@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from ingest.corpus import by_id, latest, to_text  # noqa: E402
+from ingest.corpus import by_id, latest, to_text
 
 # 20 words, off the top of my head. not a real taxonomy, that comes at step 08.
 SKILLS = [

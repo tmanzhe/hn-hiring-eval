@@ -23,12 +23,15 @@ API = "https://hn.algolia.com/api/v1"
 RAW = Path(__file__).resolve().parent.parent / "data" / "raw"
 
 # "Ask HN: Who is hiring? (July 2026)"
-TITLE = re.compile(r"who is hiring", re.I)
+TITLE = re.compile(r"who is hiring", re.IGNORECASE)
 MONTH_YEAR = re.compile(r"\(([A-Za-z]+)\s+(\d{4})\)")
 MONTHS = {
     m: i
     for i, m in enumerate(
-        "january february march april may june july august september october november december".split(),
+        [
+            "january", "february", "march", "april", "may", "june",
+            "july", "august", "september", "october", "november", "december",
+        ],
         1,
     )
 }

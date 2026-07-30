@@ -14,8 +14,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from ingest.corpus import by_id, to_text  # noqa: E402
-from ingest.rules_poc import find_salary, find_skills  # noqa: E402
+from ingest.corpus import by_id, to_text
+from ingest.rules_poc import find_salary, find_skills
 
 LABELS = Path(__file__).resolve().parent / "poc_labels.jsonl"
 
