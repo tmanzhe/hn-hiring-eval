@@ -33,3 +33,6 @@ out/
 
 # working checklist, has internal framing in it
 PLAN.md
+
+# tally output, mine not the repos
+docs/format_tally.json

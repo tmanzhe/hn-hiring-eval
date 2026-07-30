@@ -6,16 +6,19 @@ Read 30 top-level comments out of `data/raw/` by hand. For each shape, note roug
 shows up. The schema comes from this. The buckets here also become the slices in every eval run,
 which is what makes "84% overall, 61% on prose" a thing I can say.
 
-| Shape                       | Count / 30 | Notes |
-| --------------------------- | ---------- | ----- |
-| pipe-delimited header line  |            |       |
-| prose paragraphs            |            |       |
-| bulleted requirements       |            |       |
-| multi-role post             |            |       |
-| no salary stated            |            |       |
-| non-USD salary              |            |       |
-| equity only / "competitive" |            |       |
-| agency or recruiter spam    |            |       |
+<!-- tally:start -->
+| Shape | Count / 30 | Notes |
+| --- | --- | --- |
+| pipe-delimited header line |  |  |
+| prose paragraphs |  |  |
+| bulleted requirements |  |  |
+| multi-role post |  |  |
+| no salary stated |  |  |
+| non-USD salary |  |  |
+| equity only / "competitive" |  |  |
+| agency or recruiter spam |  |  |
+| genuinely ambiguous |  |  |
+<!-- tally:end -->
 
 ## Examples worth keeping
 
