@@ -1,0 +1,29 @@
+# data is reproducible from the HN API — never commit it
+data/
+
+# python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# secrets
+.env
+.env.*
+!.env.example
+
+# terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+
+# node / next
+node_modules/
+.next/
+out/
+
+# macos
+.DS_Store
