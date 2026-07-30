@@ -16,7 +16,7 @@ Full reasoning lives in the build-plan artifact. This is just the checklist.
 
 Job here is to try to kill the premise before spending seven weeks on it.
 
-- [ ] P1 · pull one thread, dump the JSON — 30 min
+- [x] P1 · pull one thread, dump the JSON — 30 min
 - [ ] P2 · read twenty posts, tally the formats — 30 min
 - [ ] P3 · crudest rules pass, two fields — 1.5 hr
 - [ ] P4 · hand-label ten posts, same two fields — 45 min
