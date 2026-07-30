@@ -1,5 +1,8 @@
-# data is reproducible from the HN API — never commit it
+# data is reproducible from the HN API, no reason to commit it
 data/
+
+# my own notes, not part of the repo
+.notes.md
 
 # python
 .venv/
