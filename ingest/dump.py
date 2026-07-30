@@ -24,6 +24,7 @@ def to_text(s):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("-n", type=int, default=20)
+    ap.add_argument("--ids", help="comma-separated objectIDs, e.g. the ten POC posts")
     ap.add_argument("--file", type=Path)
     args = ap.parse_args()
 
@@ -32,7 +33,12 @@ def main():
         raise SystemExit("nothing in data/raw. run ingest/fetch.py first")
 
     data = json.loads(path.read_text())
-    posts = data["comments"][: args.n]
+    if args.ids:
+        want = args.ids.split(",")
+        by_id = {c["objectID"]: c for c in data["comments"]}
+        posts = [by_id[i] for i in want if i in by_id]
+    else:
+        posts = data["comments"][: args.n]
     print(f"{data.get('title') or data['thread_id']}  ({len(data['comments'])} postings)\n")
 
     for i, c in enumerate(posts, 1):

@@ -18,9 +18,9 @@ Job here is to try to kill the premise before spending seven weeks on it.
 
 - [x] P1 · pull one thread, dump the JSON — 30 min
 - [ ] P2 · read twenty posts, tally the formats — 30 min
-- [ ] P3 · crudest rules pass, two fields — 1.5 hr
-- [ ] P4 · hand-label ten posts, same two fields — 45 min
-- [ ] P5 · score it, print one honest number — 1.5 hr
+- [x] P3 · crudest rules pass, two fields — 1.5 hr
+- [ ] P4 · hand-label ten posts, same two fields — 45 min  ← template in `evals/poc_labels.jsonl`
+- [ ] P5 · score it, print one honest number — 1.5 hr  ← script done, needs P4 first
 
 Reading the gate:
 
