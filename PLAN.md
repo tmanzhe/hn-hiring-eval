@@ -36,9 +36,9 @@ becomes 14.
 Read the data, let it pick the schema. No prompt yet.
 
 - [x] 01 · scaffold the repo — Ship — 30 min
-- [ ] 02 · fetch one thread end to end — Ship — 1 hr
+- [x] 02 · fetch one thread end to end — Ship — 1 hr
 - [ ] 03 · read 30 posts, write `docs/formats.md` — Edge — 1.5 hr
-- [ ] 04 · define the Pydantic schema — Ship — 1 hr
+- [~] 04 · define the Pydantic schema — Ship — 1 hr  ← draft in `ingest/schema.py`, confirm after 03
 
 ## Phase 1, extraction, cheap path first (Aug 3 – Aug 9)
 

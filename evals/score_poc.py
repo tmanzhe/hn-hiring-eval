@@ -14,7 +14,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from ingest.rules_poc import RAW, find_salary, find_skills, to_text  # noqa: E402
+from ingest.corpus import by_id, to_text  # noqa: E402
+from ingest.rules_poc import find_salary, find_skills  # noqa: E402
 
 LABELS = Path(__file__).resolve().parent / "poc_labels.jsonl"
 
@@ -33,22 +34,21 @@ def main():
     if not done:
         raise SystemExit(
             f"0 of {len(labels)} rows labeled. that's P4.\n"
-            "  python3 ingest/dump.py --ids "
+            "  uv run ingest/dump.py --ids "
             + ",".join(r["comment_id"] for r in labels)
             + "\nthen fill in evals/poc_labels.jsonl and set done to true."
         )
     if len(done) < len(labels):
         print(f"scoring {len(done)} of {len(labels)} labeled rows\n")
 
-    path = max(RAW.glob("*.json"), key=lambda p: p.stat().st_mtime)
-    by_id = {c["objectID"]: c for c in json.loads(path.read_text())["comments"]}
+    posts = {c["objectID"]: c for c in by_id([r["comment_id"] for r in done])}
 
     # the four outcomes for a field that's allowed to be absent
     right = abstained = missed = hallucinated = wrong = 0
     f1s = []
 
     for row in done:
-        text = to_text(by_id[row["comment_id"]].get("comment_text"))
+        text = to_text(posts[row["comment_id"]].get("comment_text"))
         p_lo, p_hi, _ = find_salary(text)
         t_lo = row["salary_min"]
 

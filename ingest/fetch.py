@@ -1,71 +1,128 @@
-"""P1. Grab a Who-is-hiring thread and put the raw JSON on disk.
+"""Step 02. Fetch Who-is-hiring threads from Algolia and write the raw JSON to disk.
 
-stdlib only so it runs before uv sync. The real ingest job in step 02 uses httpx.
+    uv run ingest/fetch.py                # newest thread only
+    uv run ingest/fetch.py --months 12    # the last 12 monthly threads
+    uv run ingest/fetch.py --thread 48747976
 
-    python3 ingest/fetch.py              # newest thread
-    python3 ingest/fetch.py 41425910     # a specific one
+Raw in, nothing parsed. Parsing happens in rules.py and the LLM fallback, both of which run
+offline against these files. I rewrite the parser many times; I don't want to re-hit the API
+many times, and I don't want a different snapshot landing mid-project and invalidating labels
+I already made.
 """
 
+import argparse
 import json
-import sys
+import re
 import time
-import urllib.parse
-import urllib.request
+from datetime import date
 from pathlib import Path
+
+import httpx
 
 API = "https://hn.algolia.com/api/v1"
 RAW = Path(__file__).resolve().parent.parent / "data" / "raw"
 
-
-def get(path, **params):
-    url = f"{API}/{path}?{urllib.parse.urlencode(params)}"
-    with urllib.request.urlopen(url, timeout=30) as r:
-        return json.load(r)
-
-
-def latest_thread():
-    """Newest 'Who is hiring?' story. whoishiring also posts freelancer and hiring threads."""
-    hits = get("search_by_date", tags="story,author_whoishiring", hitsPerPage=20)["hits"]
-    for h in hits:
-        if "who is hiring" in h["title"].lower():
-            return h["objectID"], h["title"], h["created_at"]
-    sys.exit("no hiring thread in the last 20 stories from whoishiring")
+# "Ask HN: Who is hiring? (July 2026)"
+TITLE = re.compile(r"who is hiring", re.I)
+MONTH_YEAR = re.compile(r"\(([A-Za-z]+)\s+(\d{4})\)")
+MONTHS = {
+    m: i
+    for i, m in enumerate(
+        "january february march april may june july august september october november december".split(),
+        1,
+    )
+}
 
 
-def comments(thread_id):
-    """Top-level comments only. Replies are discussion, not postings."""
+def client():
+    return httpx.Client(
+        base_url=API,
+        timeout=httpx.Timeout(30.0, connect=10.0),
+        transport=httpx.HTTPTransport(retries=3),
+        headers={"user-agent": "hn-hiring-eval (github.com/tmanzhe/hn-hiring-eval)"},
+    )
+
+
+def thread_date(title):
+    """Month the thread was posted for. Step 09 partitions on this, and it's what separates
+    'currently hiring' from the historical trends set. Conflating those two is a correctness
+    bug, not a UI detail."""
+    m = MONTH_YEAR.search(title or "")
+    if not m or m[1].lower() not in MONTHS:
+        return None
+    return date(int(m[2]), MONTHS[m[1].lower()], 1).isoformat()
+
+
+def hiring_threads(c, limit):
+    """whoishiring also posts freelancer and who-wants-to-be-hired threads. Filter on title."""
+    r = c.get(
+        "/search_by_date",
+        params={"tags": "story,author_whoishiring", "hitsPerPage": limit * 3},
+    )
+    r.raise_for_status()
+    out = [h for h in r.json()["hits"] if TITLE.search(h["title"] or "")]
+    return out[:limit]
+
+
+def comments(c, thread_id):
+    """Top-level comments only. Replies are people asking about visa sponsorship."""
     out, page, pages = [], 0, 1
     while page < pages:
-        r = get("search", tags=f"comment,story_{thread_id}", hitsPerPage=100, page=page)
-        pages = r["nbPages"]
-        out += [h for h in r["hits"] if str(h["parent_id"]) == str(thread_id)]
-        print(f"  page {page + 1}/{pages}, {len(out)} kept")
+        r = c.get(
+            "/search",
+            params={"tags": f"comment,story_{thread_id}", "hitsPerPage": 100, "page": page},
+        )
+        r.raise_for_status()
+        body = r.json()
+        pages = body["nbPages"]
+        out += [h for h in body["hits"] if str(h["parent_id"]) == str(thread_id)]
         page += 1
         time.sleep(0.3)
     return out
 
 
-def main():
-    if len(sys.argv) > 1:
-        thread_id, title, created = sys.argv[1], None, None
-    else:
-        thread_id, title, created = latest_thread()
-        print(f"{title} ({created})")
-
-    RAW.mkdir(parents=True, exist_ok=True)
+def save(c, thread_id, title=None, created=None):
     dest = RAW / f"{thread_id}.json"
     if dest.exists():
-        print(f"already have {dest.relative_to(RAW.parent.parent)}, not refetching")
-        return
+        print(f"  have {thread_id} already, skipping")
+        return 0
 
-    hits = comments(thread_id)
+    hits = comments(c, thread_id)
     dest.write_text(
         json.dumps(
-            {"thread_id": thread_id, "title": title, "created_at": created, "comments": hits},
+            {
+                "thread_id": str(thread_id),
+                "title": title,
+                "created_at": created,
+                "thread_date": thread_date(title),
+                "comments": hits,
+            },
             indent=2,
         )
     )
-    print(f"{len(hits)} postings -> {dest.relative_to(RAW.parent.parent)}")
+    print(f"  {thread_id}  {title or '-'}  {len(hits)} postings")
+    return len(hits)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--months", type=int, default=1, help="how many recent threads to pull")
+    ap.add_argument("--thread", help="a specific thread id, skips the search")
+    args = ap.parse_args()
+
+    RAW.mkdir(parents=True, exist_ok=True)
+    total = 0
+    with client() as c:
+        if args.thread:
+            total += save(c, args.thread)
+        else:
+            threads = hiring_threads(c, args.months)
+            if not threads:
+                raise SystemExit("no hiring threads found in whoishiring's recent stories")
+            for h in threads:
+                total += save(c, h["objectID"], h["title"], h["created_at"])
+
+    print(f"\n{total} new postings in data/raw/")
 
 
 if __name__ == "__main__":

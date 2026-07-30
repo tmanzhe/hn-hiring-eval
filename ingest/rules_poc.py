@@ -2,20 +2,22 @@
 
 No schema, no classes, no LLM. Prints what it finds so I can see where it falls over.
 
-    python3 ingest/rules_poc.py -n 30
-    python3 ingest/rules_poc.py --ids 48919859,48915735
+    uv run ingest/rules_poc.py -n 30
+    uv run ingest/rules_poc.py --ids 48919859,48915735
 
 Whatever this misses is the argument for putting a model behind it. Whatever it gets right is
 work I refuse to pay a model to redo.
+
+Superseded at step 05, which becomes the real parser against ingest/schema.py.
 """
 
 import argparse
-import html
-import json
 import re
+import sys
 from pathlib import Path
 
-RAW = Path(__file__).resolve().parent.parent / "data" / "raw"
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from ingest.corpus import by_id, latest, to_text  # noqa: E402
 
 # 20 words, off the top of my head. not a real taxonomy, that comes at step 08.
 SKILLS = [
@@ -25,7 +27,6 @@ SKILLS = [
 ]
 
 DASH = r"[-–—]|\s+to\s+"
-AMT = r"\$?\s?(\d{2,3}(?:[.,]\d{3})?)\s?[kK]?"
 SALARY = re.compile(
     rf"(?P<cur>\$|USD|EUR|GBP|€|£)\s?(?P<lo>\d{{1,3}}(?:[.,]\d{{3}})?)\s?(?P<lok>[kK])?"
     rf"\s*(?:{DASH})\s*"
@@ -33,16 +34,9 @@ SALARY = re.compile(
 )
 
 
-def to_text(s):
-    s = re.sub(r"<p>", "\n", s or "")
-    s = re.sub(r"<[^>]+>", "", s)
-    return html.unescape(s)
-
-
 def to_dollars(n, k):
     n = float(n.replace(",", "").replace(".", "")) if "," in n or "." in n else float(n)
-    v = n * 1000 if k else n
-    return int(v)
+    return int(n * 1000 if k else n)
 
 
 def find_salary(text):
@@ -64,13 +58,7 @@ def main():
     ap.add_argument("--ids")
     args = ap.parse_args()
 
-    path = max(RAW.glob("*.json"), key=lambda p: p.stat().st_mtime)
-    posts = json.loads(path.read_text())["comments"]
-    if args.ids:
-        want = set(args.ids.split(","))
-        posts = [c for c in posts if c["objectID"] in want]
-    else:
-        posts = posts[: args.n]
+    posts = by_id(args.ids.split(",")) if args.ids else latest()["comments"][: args.n]
 
     found = 0
     for c in posts:

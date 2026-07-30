@@ -59,12 +59,14 @@ uv sync                  # curl -LsSf https://astral.sh/uv/install.sh | sh
 cp .env.example .env     # add ANTHROPIC_API_KEY
 ```
 
-The two POC scripts under `ingest/` use stdlib only, so they run before `uv sync` does.
-
 ```sh
-python3 ingest/fetch.py          # writes data/raw/<thread_id>.json
-python3 ingest/dump.py -n 20     # prints posts to read
+uv run ingest/fetch.py --months 6   # writes data/raw/<thread_id>.json
+uv run ingest/dump.py -n 20         # prints posts to read
+uv run ingest/rules_poc.py -n 20    # crude regex pass, coverage only
+uv run evals/score_poc.py           # scores rules against evals/poc_labels.jsonl
 ```
+
+Corpus on disk: 6 threads, Feb–Jul 2026, 1,995 postings.
 
 ## Limitations
 
