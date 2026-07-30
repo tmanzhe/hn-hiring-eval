@@ -1,25 +1,23 @@
 # Format taxonomy
 
-**Step 03. Do not write a prompt or a schema before this file has real counts in it.**
+Step 03. No prompt and no schema until this file has real counts in it.
 
-Read 30 top-level comments from `data/raw/` by hand. For each shape you see, record roughly how
-common it is. This document is where the schema comes from, and the buckets here become the
-`slices` in every eval run — which is what makes "84% overall, 61% on prose" possible to say.
+Read 30 top-level comments out of `data/raw/` by hand. For each shape, note roughly how often it
+shows up. The schema comes from this. The buckets here also become the slices in every eval run,
+which is what makes "84% overall, 61% on prose" a thing I can say.
 
-Skipping this is why most extraction projects end up measuring the wrong fields.
-
-| Shape                        | Count / 30 | Notes |
-| ---------------------------- | ---------- | ----- |
-| Pipe-delimited header line   |            |       |
-| Prose paragraphs             |            |       |
-| Bulleted requirement list    |            |       |
-| Multi-role post              |            |       |
-| No salary stated             |            |       |
-| Non-USD salary               |            |       |
-| Equity-only / "competitive"  |            |       |
-| Agency / recruiter spam      |            |       |
+| Shape                       | Count / 30 | Notes |
+| --------------------------- | ---------- | ----- |
+| pipe-delimited header line  |            |       |
+| prose paragraphs            |            |       |
+| bulleted requirements       |            |       |
+| multi-role post             |            |       |
+| no salary stated            |            |       |
+| non-USD salary              |            |       |
+| equity only / "competitive" |            |       |
+| agency or recruiter spam    |            |       |
 
 ## Examples worth keeping
 
-Paste 2–3 real comments per shape here. These become your few-shot candidates in step 19 and
-your hard cases in the stratified sample in step 10.
+Two or three real comments per shape. These end up as few-shot candidates in step 19 and as the
+hard cases in the stratified sample in step 10.

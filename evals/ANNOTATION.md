@@ -1,29 +1,29 @@
 # Annotation guide
 
-**Step 11. Write this before labeling, not during.** You will contradict yourself by post 40
-otherwise, and inconsistent labels mean your metrics measure your mood.
+Step 11. Write it before labeling, not while labeling. Otherwise I'll contradict myself around
+post 40 and the metrics end up measuring my mood.
 
-Ambiguity you discover here is a **finding worth reporting**, not a failure. "11% of posts are
-genuinely ambiguous on salary" is a real result about the ceiling on *any* extractor.
+Ambiguity I find here is a result, not a problem. "11% of posts are genuinely ambiguous on
+salary" says something about the ceiling on any extractor, mine included.
 
-## Decide these up front
+## Calls to make up front
 
-- Is `$150k + equity` a salary? Is "competitive" one?
-- Does a multi-role post become one row or three?
-- Is "Rails" a skill, a framework, or both — and do you count both?
-- Does a mentioned nice-to-have count as a required skill?
-- Is an office city a `location`, a `remote` policy, or both?
-- Hourly rates — convert to annual, or leave null?
-- Salary range stated as a single number (`$180k`) — min, max, or both?
+- is `$150k + equity` a salary? is "competitive"?
+- does a multi-role post become one row or three?
+- is "Rails" a skill, a framework, or both, and do I count both?
+- does a nice-to-have count as a required skill?
+- is an office city a location, a remote policy, or both?
+- hourly rates: convert to annual or leave null?
+- a single figure like `$180k`: min, max, or both?
 
 ## Rules
 
-Record the answer to each of the above as a one-line rule. Add rules as you hit new cases, and
-**re-check earlier labels** whenever you add one.
+One line per answer above. Add rules as new cases come up, and go back and re-check earlier
+labels every time I add one.
 
 1. _(fill in)_
 
-## The one hard constraint
+## The one hard rule
 
-**Do not look at model output while labeling.** Once you have, you are no longer labeling
-ground truth — you are grading your own extractor's homework.
+Don't look at model output while labeling. Once I have, it isn't ground truth anymore, it's me
+grading my own extractor's homework.
