@@ -30,3 +30,6 @@ out/
 
 # macos
 .DS_Store
+
+# working checklist, has internal framing in it
+PLAN.md

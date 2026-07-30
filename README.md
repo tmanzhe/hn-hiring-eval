@@ -8,7 +8,7 @@ error bars on it.
 
 ## Status
 
-Scaffolded. Nothing measured yet. Checklist is in `PLAN.md`.
+Scaffolded. Nothing measured yet.
 
 Numbers in this README get filled in from `evals/runs.jsonl` at step 34. They stay empty until
 then. A placeholder number is worse than no number.
