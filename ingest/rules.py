@@ -55,7 +55,7 @@ def _to_number(raw, k_suffix, trailing_k):
     n = float(raw.replace(",", ""))
     if k_suffix or trailing_k:
         n *= 1000
-    return int(round(n))
+    return round(n)
 
 
 def _resolve(lo, hi, cur_raw, tail, infer_hourly=True):
@@ -132,30 +132,30 @@ SKILLS = {
 }
 
 REMOTE = [
-    (re.compile(r"\bhybrid\b", re.I), "hybrid"),
-    (re.compile(r"\b(?:remote|wfh|distributed|anywhere)\b", re.I), "remote"),
-    (re.compile(r"\b(?:onsite|on-site|in[- ]office|in[- ]person)\b", re.I), "onsite"),
+    (re.compile(r"\bhybrid\b", re.IGNORECASE), "hybrid"),
+    (re.compile(r"\b(?:remote|wfh|distributed|anywhere)\b", re.IGNORECASE), "remote"),
+    (re.compile(r"\b(?:onsite|on-site|in[- ]office|in[- ]person)\b", re.IGNORECASE), "onsite"),
 ]
 
 SENIORITY = [
-    (re.compile(r"\b(?:staff|principal|distinguished|architect|director|vp|head of)\b", re.I), "staff+"),
-    (re.compile(r"\b(?:senior|sr\.?|lead)\b", re.I), "senior"),
-    (re.compile(r"\b(?:junior|jr\.?|entry[- ]level|new grad|graduate|intern)\b", re.I), "junior"),
-    (re.compile(r"\b(?:mid[- ]level|intermediate)\b", re.I), "mid"),
+    (re.compile(r"\b(?:staff|principal|distinguished|architect|director|vp|head of)\b", re.IGNORECASE), "staff+"),
+    (re.compile(r"\b(?:senior|sr\.?|lead)\b", re.IGNORECASE), "senior"),
+    (re.compile(r"\b(?:junior|jr\.?|entry[- ]level|new grad|graduate|intern)\b", re.IGNORECASE), "junior"),
+    (re.compile(r"\b(?:mid[- ]level|intermediate)\b", re.IGNORECASE), "mid"),
 ]
 
-VISA_YES = re.compile(r"\bvisa\b[^.\n]{0,40}\b(?:ok|yes|sponsor|available|support)", re.I)
-VISA_NO = re.compile(r"\b(?:no visa|visa[^.\n]{0,20}not|cannot sponsor|no sponsorship)", re.I)
+VISA_YES = re.compile(r"\bvisa\b[^.\n]{0,40}\b(?:ok|yes|sponsor|available|support)", re.IGNORECASE)
+VISA_NO = re.compile(r"\b(?:no visa|visa[^.\n]{0,20}not|cannot sponsor|no sponsorship)", re.IGNORECASE)
 
 ROLE_HINT = re.compile(
     r"\b(?:engineer|developer|scientist|designer|manager|architect|analyst|researcher|"
     r"lead|director|devops|sre|founding)\b",
-    re.I,
+    re.IGNORECASE,
 )
 LOCATION_HINT = re.compile(
     r"\b(?:remote|hybrid|onsite|on-site|usa?|uk|eu|europe|latam|apac|canada|nyc|sf|"
     r"san francisco|new york|london|berlin|austin|seattle|boston|toronto|amsterdam)\b",
-    re.I,
+    re.IGNORECASE,
 )
 
 
