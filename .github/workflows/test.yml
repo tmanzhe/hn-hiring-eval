@@ -14,7 +14,22 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --extra dev
-      # no network and no API key in here on purpose. these tests are pure functions and
-      # schema checks, so a red build means I broke logic, not that Algolia was down.
-      - run: uv run ruff check .
-      - run: uv run pytest -q
+
+      - name: lint
+        run: uv run ruff check .
+
+      - name: tests
+        run: uv run pytest -q
+
+      # The suite already invokes the scripts as subprocesses, but this runs the real
+      # entrypoint the way I run it, so a broken CLI shows up as a failed step rather than
+      # buried in a test name. tests/fixtures is 6 real posts, so there's no network here
+      # and no API key — a red build means I broke logic, not that Algolia was down.
+      - name: pipeline smoke test
+        env:
+          HN_RAW_DIR: tests/fixtures
+        run: |
+          uv run ingest/pipeline.py --coverage
+          uv run ingest/pipeline.py
+          test -f tests/postings.parquet || { echo "pipeline wrote no Parquet"; exit 1; }
+          echo "pipeline produced Parquet"

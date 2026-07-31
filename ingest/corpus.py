@@ -7,10 +7,13 @@ reorders mtimes and the ten POC ids start getting looked up in the wrong thread.
 
 import html
 import json
+import os
 import re
 from pathlib import Path
 
-RAW = Path(__file__).resolve().parent.parent / "data" / "raw"
+# HN_RAW_DIR lets CI point the whole pipeline at tests/fixtures/ and run the real entrypoint
+# without a network call. Without it, a broken main() still passes every test.
+RAW = Path(os.environ.get("HN_RAW_DIR") or Path(__file__).resolve().parent.parent / "data" / "raw")
 
 
 def to_text(s):

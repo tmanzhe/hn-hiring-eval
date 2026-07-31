@@ -40,3 +40,7 @@ docs/format_tally.json
 # pipeline outputs, rebuildable
 data/postings.parquet
 data/needs_llm.json
+
+# pipeline output when CI points HN_RAW_DIR at the fixtures
+tests/postings.parquet
+tests/needs_llm.json

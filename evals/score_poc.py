@@ -9,6 +9,7 @@ Order matters: label first (P4), then run this. Reading the rules output before 
 I'd talk myself into agreeing with the regex.
 """
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -29,6 +30,8 @@ def norm(skills):
 
 
 def main():
+    argparse.ArgumentParser(description=__doc__.splitlines()[0]).parse_args()
+
     labels = [json.loads(l) for l in LABELS.read_text().splitlines() if l.strip()]
     done = [r for r in labels if r.get("done")]
     if not done:

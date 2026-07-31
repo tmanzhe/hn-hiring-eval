@@ -1,0 +1,56 @@
+{
+  "thread_id": "48747976",
+  "title": "Ask HN: Who is hiring? (July 2026)",
+  "created_at": "2026-07-01T15:01:21Z",
+  "thread_date": "2026-07-01",
+  "comments": [
+    {
+      "objectID": "48915735",
+      "author": "bnhan2710",
+      "comment_text": "Portless | AI Engineer | Remote (North America) | $180k-$230k | Full-time<p>We&#x27;re a company doing real operational work in e-commerce&#x2F;3PL logistics. AI usage internally is still basic \u2014 decks, spreadsheets, a few people vibe-coding dashboards. No real agentic workflows in production yet. That&#x27;s what this role is for.\nYou&#x27;d be the first dedicated AI engineer here. Two things at once: ship agentic workflows that replace real manual work, and build the underlying platform (APIs, MCP tools, docs) so other teams can build their own instead of asking you for everything forever.\nFirst project: an agent that reads an inbound invoice question, pulls the correct (often complex) invoice, and drafts a context-aware reply a teammate can review and send. Currently ~1 hour of manual work, target is ~30 seconds.\nWhat we need:<p>3+ years SWE, 1-2+ of which building production AI systems (not prototypes)\n10+ agentic&#x2F;LLM workflows shipped end-to-end \u2014 not toy demos\nEvidence you&#x27;ve built infra&#x2F;tools for other people to use, not just yourself\nStrong Python and&#x2F;or TypeScript\nSome background in e-commerce, 3PL, logistics, or comparable B2B ops<p>Nice to have: RAG, vector DBs, multi-step orchestration, eval frameworks, heavy Cursor&#x2F;Claude Code&#x2F;Copilot usage.\nFully remote, direct access to leadership, real scope to define how AI gets built here rather than inheriting someone else&#x27;s stack.<p>Full JD + Apply: <a href=\"https:&#x2F;&#x2F;uctalent.io&#x2F;referral&#x2F;Huynh_Nhu_Bao_Nhan221138&#x2F;DNwhgwstew8NptdHHFkpK?utm_source=headhunter&amp;utm_medium=referral\" rel=\"nofollow\">https:&#x2F;&#x2F;uctalent.io&#x2F;referral&#x2F;Huynh_Nhu_Bao_Nhan221138&#x2F;DNwhgw...</a>",
+      "parent_id": 48747976,
+      "story_id": 48747976,
+      "created_at": "2026-07-15T03:02:35Z"
+    },
+    {
+      "objectID": "48919859",
+      "author": "baaaadegg",
+      "comment_text": "Founding Technologist + Full Stack Developer | REMOTE | Part-or-full-time | $0 + equity<p>Looking for a founding dev for an early wellness and spirituality project. Product focus is on video streaming, audio quality, data privacy, and global payments. A working MVP is live on web, Android, and iOS. Stack includes: Next.js&#x2F;React Native, Tailwind, TypeScript, Agora RTC, and Firebase.<p>We&#x27;re two non-YC entrepreneurs with experience in blockchain, education, hospitality, and service-based businesses. We hope to find someone who shares an interest in developing their wellness and spirituality practice. The aim is to keep the team small and development tight, as the product goals are clearly defined.<p>Please reach out over email if you have the capacity to learn more!<p>-Andrew, -Michal<p>hataginow@gmail.com",
+      "parent_id": 48747976,
+      "story_id": 48747976,
+      "created_at": "2026-07-15T12:32:31Z"
+    },
+    {
+      "objectID": "48900749",
+      "author": "shanbhagp",
+      "comment_text": "Namecoach&#x2F;Euphonia | Founding Voice AI Engineer (part-time, path to CAIO) | SF or Remote | REMOTE | Contract &#x2F; Part-time, ~$30-120&#x2F;hr by seniority, potentially converting to FT<p>Namecoach has spent 10 years building the largest verified pronunciation dataset of its kind: ~2M self-recorded name pronunciations, plus a large corpus of human-verified phonetic spellings.<p>We&#x27;re now building Euphonia (<a href=\"https:&#x2F;&#x2F;euphonia.namecoach.ai&#x2F;\" rel=\"nofollow\">https:&#x2F;&#x2F;euphonia.namecoach.ai&#x2F;</a>), a provider-neutral middleware layer that makes any TTS engine pronounce names, acronyms, and other out-of-vocabulary terms correctly. The new wave of TTS (models from OpenAI, ElevenLabs, etc) sounds great but gives you almost no phoneme-level control, so it gets lots of names and words wrong and you can&#x27;t easily fix it. We sit in front of these engines and fix it.<p>We want real depth in speech and phonetics: grapheme-to-phoneme, IPA, ASR&#x2F;TTS internals, and the ability to build and evaluate models around them (the recognition and G2P side especially). You should be comfortable shipping with agentic dev tools like Claude Code and Cursor. This is a 0 to 1 founding voice AI engineering role with a genuine path to Chief AI Officer for the right person.<p>Part-time to start (flexible hours, ~2hr&#x2F;day overlap with US Pacific), with a paid take-home and a paid trial month before anything longer term. Potential conversion to full-time role. Series A closed, bridge to B in motion.<p>Full JD: <a href=\"https:&#x2F;&#x2F;wellfound.com&#x2F;l&#x2F;2ChdJ2\" rel=\"nofollow\">https:&#x2F;&#x2F;wellfound.com&#x2F;l&#x2F;2ChdJ2</a><p>Email hiring+hn@name-coach.com with a short note on what interests you and a link to something you&#x27;ve built. G2P &#x2F; TTS &#x2F; ASR open-source work gets read first.",
+      "parent_id": 48747976,
+      "story_id": 48747976,
+      "created_at": "2026-07-14T00:20:28Z"
+    },
+    {
+      "objectID": "48885246",
+      "author": "lt1013",
+      "comment_text": "Sports Trading Exchange | Founding Engineer &#x2F; CTO | Remote USA | $140\u2013200k + meaningful equity + founder seat available<p>We&#x27;re building a peer-to-peer exchange where fans buy and sell positions in individual athletes, like a stock. Real money, central limit order book, mechanical settlement against a published rules-based rating computed from official on-field stats. There is no house. Fans trade against each other like a prediction market.<p>We are far along on everything except the build. Rating methodology is designed, legal structure is scoped with counsel, payments and data vendors are selected, and we ran a beta this past NFL season that drew ~1,000 organic users and 21,000 trades in four weeks. The founding team was part of Founders Inc, and we are about to open our seed round.<p>We are hiring the engineer who owns the entire technical build, with no inherited architecture and nobody between them and the problem:<p>Matching engine and order book\nRating and settlement engine, deterministic, computed from official stats\nLedger, custody, and the real-time data pipeline\nEvery architecture decision, including one we have deliberately left open: on-chain vs off-chain custody and settlement at v1<p>Looking for someone who has built correctness-critical, concurrent systems. Trading, exchanges, payments, or comparable. Language is open. We care about systems depth, not a specific stack. Two non-technical founders, so you would own the technical domain completely and be the technical voice with investors and eventually regulators.\nEmail me leon@fansharesapp.com if interested, thanks",
+      "parent_id": 48747976,
+      "story_id": 48747976,
+      "created_at": "2026-07-12T21:59:39Z"
+    },
+    {
+      "objectID": "48908740",
+      "author": "pitcrew",
+      "comment_text": "New York City Public Interest Technology (PIT) Crew | Senior Product Engineer, Senior Product Designer, Senior Product Manager | Full-time | NYC<p>We\u2019re New York City\u2019s Public Interest Technology (PIT) Crew, and we believe in using tech for good. We\u2019re software engineers, user researchers, designers, and product managers building digital public goods for New Yorkers, faster and in-house. Each PIT Crew will work alongside City agencies and New Yorkers to design, build and launch digital solutions to deliver on Mayor Mamdani&#x27;s affordability agenda -- from housing and childcare to consumer and worker protection, and more.<p>Our goal is to make interacting with government dignified and delightful for every New Yorker. It\u2019s a challenge, and we\u2019re up for it. Join us.<p>Apply: <a href=\"https:&#x2F;&#x2F;nyc.gov&#x2F;pitcrew\" rel=\"nofollow\">https:&#x2F;&#x2F;nyc.gov&#x2F;pitcrew</a>",
+      "parent_id": 48747976,
+      "story_id": 48747976,
+      "created_at": "2026-07-14T15:52:55Z"
+    },
+    {
+      "objectID": "48868436",
+      "author": "nhanbao",
+      "comment_text": "ResortPass | Senior Software Engineer, Frontend | New York, NY | Onsite | Full-time | $160k\u2013$180k ($210k for senior band) + Equity | Visa possible for exceptional candidates<p>ResortPass is rebuilding the web experience behind one of the largest hospitality marketplaces. We&#x27;re rewriting ~75% of resortpass.com this year, focusing on Core Web Vitals, SEO, performance, and developer experience.<p>Roadmap this year is aggressive: international expansion (Mexico&#x2F;Caribbean, then Europe), moving search off Algolia in-house, a new Hotel SaaS product, Spa as a new business line. AI features (concierge chat, AI booking assistant) are also landing on this frontend, so there&#x27;s exposure there too.<p>You&#x27;ll help lead large frontend initiatives, define architecture, mentor engineers, and work closely with Product and Backend teams.<p>Tech: React 19, Next.js 16 (App Router), TypeScript, Tailwind, shadcn&#x2F;ui, Playwright, Datadog, Node.js, Ruby on Rails, PostgreSQL, MongoDB, AWS.<p>Looking for engineers with 6-10 years of experience building production web applications and deep expertise in React&#x2F;Next.js.<p>Full JD + Apply: <a href=\"https:&#x2F;&#x2F;uctalent.io&#x2F;referral&#x2F;Huynh_Nhu_Bao_Nhan221138&#x2F;O-al4WLuNcGqLotYmdrZY?utm_source=headhunter&amp;utm_medium=referral\" rel=\"nofollow\">https:&#x2F;&#x2F;uctalent.io&#x2F;referral&#x2F;Huynh_Nhu_Bao_Nhan221138&#x2F;O-al4W...</a>",
+      "parent_id": 48747976,
+      "story_id": 48747976,
+      "created_at": "2026-07-11T03:28:07Z"
+    }
+  ]
+}
