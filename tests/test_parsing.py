@@ -61,13 +61,13 @@ class TestFindSalary:
         assert find_salary("Salary: competitive") == (None, None, None)
         assert find_salary("$0 + equity") == (None, None, None)
 
-    @pytest.mark.xfail(reason="no unit awareness; step 05 needs salary_period", strict=True)
+    @pytest.mark.xfail(reason="poc bug, fixed in ingest/rules.py", strict=True)
     def test_hourly_is_not_annual(self):
         """Post 48900749 is '~$30-120/hr'. The regex reports 30-120 as if annual. Whatever
         step 05 does, it must not silently put an hourly rate in the annual column."""
         assert find_salary("~$30-120/hr") != (30, 120, "USD")
 
-    @pytest.mark.xfail(reason="trailing k applies to both sides; step 05 fixes", strict=True)
+    @pytest.mark.xfail(reason="poc bug, fixed in ingest/rules.py", strict=True)
     def test_trailing_k_applies_to_lower_bound(self):
         """Post 48885246 is '$140–200k'. Currently reads lo as 140, not 140000."""
         assert find_salary("$140–200k") == (140000, 200000, "USD")

@@ -36,3 +36,7 @@ PLAN.md
 
 # tally output, mine not the repos
 docs/format_tally.json
+
+# pipeline outputs, rebuildable
+data/postings.parquet
+data/needs_llm.json

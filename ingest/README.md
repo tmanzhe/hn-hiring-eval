@@ -22,9 +22,11 @@ HN Algolia API
 | `corpus.py` | reading what's in `data/raw/` | done |
 | `schema.py` | `Extraction` (what the model returns) and `Posting` (the row) | draft |
 | `rules_poc.py` | crude two-field regex pass, prints only | throwaway, becomes `rules.py` |
-| `rules.py` | deterministic parser against the schema | not built |
+| `rules.py` | deterministic parser against the schema | done |
 | `llm.py` | `extract(text, model) -> Extraction`, batched | not built |
-| `normalize.py` | skill synonyms, salary units, currency | not built |
+| `normalize.py` | skill synonyms, salary units, currency | done |
+| `pipeline.py` | run rules over the corpus, report coverage, write Parquet | done |
+| `tally.py` | interactive format tallier for step 03 | done |
 
 Two rules this directory follows:
 
