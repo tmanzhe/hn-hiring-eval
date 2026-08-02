@@ -1,12 +1,17 @@
 # api
 
-FastAPI over DuckDB. One Cloud Run service. Not built yet — Phase 4.
+FastAPI over DuckDB. One Cloud Run service.
+
+```sh
+uv run uvicorn api.main:app --reload
+open http://127.0.0.1:8000/docs
+```
 
 | Endpoint | Returns |
 | --- | --- |
 | `GET /api/jobs` | list + filter, latest thread only |
 | `GET /api/trends` | skill demand by month, across all threads |
-| `POST /api/match` | resume in, ranked matches + gaps out |
+| `POST /api/match` | resume in, IDF-ranked matches + skill gaps out |
 | `GET /api/evals` | `runs.jsonl`, for the public evals page |
 
 DuckDB is embedded — a library inside this process, not a server. It queries the Parquet file

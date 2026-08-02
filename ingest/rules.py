@@ -31,6 +31,16 @@ RANGE = re.compile(
 # it was 2 of the 6 abstentions I sampled.
 SINGLE = re.compile(rf"(?P<cur>{CUR_CLASS})\s?(?P<lo>{NUM})\s?(?P<lok>[kK])?", re.IGNORECASE)
 
+# A single figure is not always a point. "up to ~$750k" is a ceiling with an unknown floor;
+# reporting min == max there asserts a floor the post never stated. Found by eyeballing the
+# top of /api/jobs sorted by salary, which is exactly what that endpoint is good for.
+BOUND_BEFORE = re.compile(
+    r"(?:(?P<upper>up\s+to|as\s+high\s+as|max(?:imum)?\s+of|no\s+more\s+than)"
+    r"|(?P<lower>from|starting\s+at|at\s+least|min(?:imum)?\s+of|north\s+of|\d+\+))"
+    r"[\s~≈]*$",
+    re.IGNORECASE,
+)
+
 # "/hr", "per hour", "annually", "/mo"
 PERIOD_AFTER = re.compile(
     r"\s*(?:/|\s+per\s+)?\s*(hr|hour|hourly|yr|year|yearly|annual(?:ly)?|mo|month|monthly)\b",
@@ -107,15 +117,27 @@ def find_salary(text):
         if got:
             return got
 
-    # No range found. Fall back to a single figure, treating it as min == max.
+    # No range found. Fall back to a single figure.
     #
-    # ANNOTATION.md has to confirm this convention — "a single figure like $190k: min, max, or
-    # both?" is an open question there, and if the answer is "min only, max None" this is a
-    # one-line change. Labels and this parser have to agree before step 12.
+    # A bare "$190k" becomes min == max. ANNOTATION.md has to confirm that convention — "a
+    # single figure: min, max, or both?" is an open question there, and labels and this parser
+    # have to agree before step 12.
+    #
+    # But a figure preceded by "up to" or "starting at" is NOT a point, and that isn't a
+    # convention question — it's what the post says. Reporting min == max for "up to $750k"
+    # asserts a floor the post never stated.
     for m in SINGLE.finditer(text):
         n = _to_number(m["lo"], bool(m["lok"]), False)
-        if got := _resolve(n, n, m["cur"], text[m.end() : m.end() + 24], infer_hourly=False):
-            return got
+        got = _resolve(n, n, m["cur"], text[m.end() : m.end() + 24], infer_hourly=False)
+        if not got:
+            continue
+
+        lo, hi, cur, period = got
+        if bound := BOUND_BEFORE.search(text[max(0, m.start() - 20) : m.start()]):
+            if bound["upper"]:
+                return None, hi, cur, period
+            return lo, None, cur, period
+        return got
 
     return None, None, None, None
 
