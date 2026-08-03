@@ -1,0 +1,20 @@
+# The image gets source and the lockfile. Everything else is noise or shouldn't ship.
+.git/
+.github/
+.venv/
+data/
+tests/
+web/
+terraform/
+docs/
+*.md
+.notes.md
+PLAN.md
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.DS_Store

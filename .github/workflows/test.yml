@@ -33,3 +33,37 @@ jobs:
           uv run ingest/pipeline.py
           test -f tests/postings.parquet || { echo "pipeline wrote no Parquet"; exit 1; }
           echo "pipeline produced Parquet"
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - name: build api image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: api/Dockerfile
+          tags: hn-api:ci
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # A container that builds but won't serve is the failure this catches. The Parquet is
+      # generated here rather than committed, so the check exercises the real ingest path too.
+      - name: run the container and hit it
+        run: |
+          uv_bin=$(mktemp -d)
+          curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR="$uv_bin" sh >/dev/null
+          HN_RAW_DIR=tests/fixtures "$uv_bin/uv" run --extra dev ingest/pipeline.py >/dev/null
+          mkdir -p ci-data && mv tests/postings.parquet ci-data/postings.parquet
+
+          docker run -d --name api -p 8000:8000 \
+            -v "$PWD/ci-data:/data:ro" -e PARQUET_URI=/data/postings.parquet hn-api:ci
+
+          for i in $(seq 30); do curl -sf localhost:8000/health >/dev/null && break; sleep 2; done
+          curl -sf localhost:8000/health | tee /dev/stderr | grep -q '"status":"ok"'
+          curl -sf "localhost:8000/api/jobs?limit=1" >/dev/null
+          echo "container serves"
+          docker rm -f api >/dev/null
