@@ -47,3 +47,6 @@ tests/needs_llm.json
 
 # eval run log, regenerated
 evals/runs.jsonl
+
+# drawn sample, regenerate with evals/sample.py
+evals/sample.json
