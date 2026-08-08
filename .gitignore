@@ -50,3 +50,6 @@ evals/runs.jsonl
 
 # drawn sample, regenerate with evals/sample.py
 evals/sample.json
+
+# hand labels and the drawn sample — mine, and regenerable
+evals/labeled.jsonl

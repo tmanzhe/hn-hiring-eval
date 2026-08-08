@@ -10,12 +10,14 @@ labeled.jsonl ──► run.py ──► scorers ──► runs.jsonl ──► 
 
 | File | What | Status |
 | --- | --- | --- |
+| `sample.py` | stratified draw + slice power analysis | done |
+| `label.py` | interactive labeling, never shows parser output | done |
 | `ANNOTATION.md` | the hard calls, written before labeling | to write |
 | `poc_labels.jsonl` | 10 labels, calibration only | to fill |
-| `labeled.jsonl` | 60 stratified posts, 40 dev / 20 held-out | not built |
+| `labeled.jsonl` | 80 stratified posts, 53 dev / 27 held-out | to fill |
 | `score_poc.py` | crude scorer over the POC 10 | done, becomes `scorers.py` |
-| `scorers.py` | one per field | not built |
-| `run.py` | config in, one `runs.jsonl` row out | not built |
+| `scorers.py` | one per field | done |
+| `run.py` | config in, one `runs.jsonl` row out | done |
 
 ## Four outcomes, not two
 
@@ -50,3 +52,18 @@ ranks those the wrong way round.
 At 60 examples, understanding the mechanics beats adopting a framework. promptfoo, Braintrust,
 LangSmith, DeepEval and Inspect all do this properly at scale — that's roughly 200 lines here,
 and the tradeoff is written up in the top-level README.
+
+## Workflow
+
+```sh
+uv run evals/sample.py -n 80 --oversample prose=20   # draw, once
+uv run evals/label.py                                # label, resumable
+uv run evals/run.py --config rules --split dev       # score, no API key needed
+uv run evals/run.py --report                         # the frontier table
+```
+
+`sample.py` reports what each slice will support **before** labeling starts. Drawn
+proportionally at n=60 the prose slice gets 8 posts and a ±26% interval — unusable, and the
+prose-vs-pipe comparison is the evidence the whole cost argument rests on. Hence n=80 with prose
+boosted to 20. Finding that out after six hours of labeling would have been expensive; finding
+it out from the sampler was free.
