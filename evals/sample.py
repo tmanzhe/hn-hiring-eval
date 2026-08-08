@@ -50,15 +50,24 @@ def strata(text: str) -> tuple[str, str, str]:
     return fmt, salary, length
 
 
-def draw(n: int, seed: int = SEED, oversample: dict[str, int] | None = None):
+def draw(
+    n: int,
+    seed: int = SEED,
+    oversample: dict[str, int] | None = None,
+    corpus: list | None = None,
+):
     """Proportional allocation with a floor.
 
     Pure proportional allocation would give a rare stratum zero or one post, which cannot
     support a claim about it. Every non-empty stratum gets at least `floor` posts, taken from
     the largest strata — trading a little representativeness for the ability to say anything
     about the small groups. That trade is the whole point of stratifying.
+
+    `corpus` is injectable so the sampling logic can be tested against a synthetic set with
+    known strata. Reading the real corpus off disk by default made these tests depend on
+    `data/raw/`, which is gitignored — they passed locally and failed in CI.
     """
-    all_posts = posts()
+    all_posts = corpus if corpus is not None else posts()
     grouped: dict[tuple, list] = {}
     for c in all_posts:
         key = strata(to_text(c.get("comment_text")))
