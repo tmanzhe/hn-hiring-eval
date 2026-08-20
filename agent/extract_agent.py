@@ -67,13 +67,16 @@ class AgentResult:
     trajectory: Trajectory
 
 
-def build(config_name: str, model: str | None = None):
+def build(config_name: str, model: str | None = None, chat_model=None):
     """Assemble the agent for one config. Imports live here so `agent.configs` and the tools
-    stay importable without the framework installed."""
+    stay importable without the framework installed.
+
+    `chat_model` accepts a pre-built LangChain model, which is how the whole path gets exercised
+    against a fake in tests. Everything except the model's own output is then real: the graph,
+    the middleware, the tool wiring, the structured-output parsing, the trajectory walk.
+    """
     from langchain.agents import create_agent
     from langchain.agents.middleware import ModelCallLimitMiddleware
-    from langchain_anthropic import ChatAnthropic
-    from langchain_anthropic.middleware import AnthropicPromptCachingMiddleware
 
     cfg = get(config_name)
     model = model or os.environ.get("STRONG_MODEL", "claude-opus-5")
@@ -84,14 +87,20 @@ def build(config_name: str, model: str | None = None):
 
     middleware = [
         ModelCallLimitMiddleware(thread_limit=MAX_MODEL_CALLS, exit_behavior="end"),
-        # The system prompt and tool definitions are byte-identical across every post, so the
-        # cacheable prefix is large and constant. Without this the same prefix is re-billed
-        # 1,696 times.
-        AnthropicPromptCachingMiddleware(),
     ]
 
+    if chat_model is None:
+        from langchain_anthropic import ChatAnthropic
+        from langchain_anthropic.middleware import AnthropicPromptCachingMiddleware
+
+        chat_model = ChatAnthropic(model=model, max_tokens=4096)
+        # The system prompt and tool definitions are byte-identical across every post, so the
+        # cacheable prefix is large and constant. Without this the same prefix is re-billed
+        # 1,696 times. Skipped for fakes, which have nothing to cache.
+        middleware.append(AnthropicPromptCachingMiddleware())
+
     agent = create_agent(
-        model=ChatAnthropic(model=model, max_tokens=4096),
+        model=chat_model,
         tools=list(cfg.tools),
         system_prompt=system,
         middleware=middleware,
@@ -135,8 +144,10 @@ def _walk(messages, traj: Trajectory) -> None:
             traj.verify_failures += 1
 
 
-def extract(text: str, config_name: str = "C", model: str | None = None) -> AgentResult:
-    agent, cfg, model_id = build(config_name, model)
+def extract(
+    text: str, config_name: str = "C", model: str | None = None, chat_model=None
+) -> AgentResult:
+    agent, cfg, model_id = build(config_name, model, chat_model)
     traj = Trajectory(config=config_name, model=model_id)
 
     started = time.perf_counter()
