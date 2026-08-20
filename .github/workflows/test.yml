@@ -13,7 +13,9 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-      - run: uv sync --extra dev
+      # --extra agent too: tests/test_agent_graph.py drives the real LangGraph graph.
+      # Without it CI skips nothing, it fails on import — which is how it should be.
+      - run: uv sync --extra dev --extra agent
 
       - name: lint
         run: uv run ruff check .

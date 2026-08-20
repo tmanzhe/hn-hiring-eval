@@ -14,6 +14,11 @@ export PATH="$HOME/.local/bin:$PATH"
 
 step() { printf '\n\033[1m== %s\033[0m\n' "$1"; }
 
+# Sync the exact extras CI installs. Skipping this once meant a test that imports langchain
+# passed locally (where I'd installed the agent extra by hand) and failed in CI on import.
+step "sync deps, same extras as CI"
+uv sync --quiet --extra dev --extra agent
+
 step "lint"
 uv run ruff check .
 
