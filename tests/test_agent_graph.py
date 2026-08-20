@@ -30,7 +30,7 @@ class ToolCallingFake(GenericFakeChatModel):
     `create_agent` can't build a graph around them. Binding is a no-op here — the scripted
     messages already contain whatever tool calls the test wants to exercise."""
 
-    def bind_tools(self, tools, **kwargs):  # noqa: ARG002
+    def bind_tools(self, tools, **kwargs):
         return self
 
 
