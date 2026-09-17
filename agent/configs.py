@@ -1,11 +1,30 @@
-"""The tool-surface experiment: A through E.
+"""The complexity ladder: A through E, plus W.
+
+Anthropic's "Building Effective Agents" argues for using the simplest pattern that passes eval,
+and adding complexity only when it earns its place. This is that argument turned into an
+experiment: same posts, same labels, same model, one variable at a time.
+
+    A   single call, no tools          the paper's "one well-tooled LLM call"
+    W   workflow, fixed code path      extract -> verify -> revise. I decide the sequence.
+    B   agent, verification only       the model decides when to verify
+    C   agent, full tool surface
+    D   agent + written guidance
+    E   agent + guidance + rules seed
+
+**W is the rung that makes the ladder honest.** Without it, a win for C over A could mean
+verification helps *or* that model-directed control helps, and nothing distinguishes them. W and
+C share tools, model and verification step — the only difference is who decides the sequence, so
+W vs C isolates the value of the agent loop itself.
 
 The claim being tested is "an agent is only as good as the tools you give it." That's usually
 asserted. Here it's an eval axis — same posts, same labels, same scorers, same model, varying
 only the surface. The result is a curve, not an opinion.
 
-Two ways it can come out interesting:
+Ways it can come out interesting:
 
+  * **W beats or ties C.** Then the agent loop is overhead on this task, and the paper's
+    "hardcode the path when you can" is measurably right here. That's the most publishable
+    outcome and the one almost nobody reports.
   * Not monotonic. If D beats C but E beats D, written guidance is doing work that extra tools
     aren't. If C == B, three of the four tools aren't earning their tokens.
   * E wins. That's the deterministic-first thesis applied to agents — seeding the model with
