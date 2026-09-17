@@ -32,9 +32,40 @@ Parquet files. That's why the engine choice here is cheap to revisit and the for
 | --- | --- | --- |
 | Postings arrive **continuously**, or **2+ independent consumers** need the same feed, or replay-from-offset is required | **Pub/Sub** (managed; Kafka only if self-hosting is a requirement) | Data arrives 12× a year to one consumer. Replay already exists — raw JSON on disk, never refetched. A broker would add an operational component that solves nothing currently true. |
 | **Concurrent writers** need atomic commits, or the schema evolves without rewriting history, or snapshot isolation / time travel matter | **Iceberg** | One writer, once a month. Atomic commits solve contention that cannot occur with a single serialised writer. |
-| The **working set exceeds one machine**, or a single query needs distributed shuffle | **Spark** | ~200 MB. JVM startup and shuffle overhead make Spark measurably *slower* at this size — see the timing in step 36. |
+| The **working set exceeds one machine**, or a single query needs distributed shuffle | **Spark** | ~200 MB, and single-node Spark measured 3.2x to 26x slower than DuckDB across every scale tried. See the table below. |
 | **Concurrent analytical users** in the tens, or a shared semantic layer is needed | **BigQuery / Trino** | One API process, embedded DuckDB, sub-100ms. A warehouse adds cost and a network hop to serve one reader. |
 | Query patterns need **sub-second point lookups by key** at high QPS | a real OLTP store | Analytical scans over a columnar file are the access pattern; there are no point lookups. |
+
+## Measured, not assumed
+
+`uv run --with pyspark bench/engines.py` runs the `/api/trends` aggregation on both engines over
+the same Parquet: explode the skills array, group by month and skill, count. The real corpus is
+replicated to reach each row count, comment ids kept unique. Median of three runs.
+
+| Rows | Parquet | DuckDB | Spark (warm) | Spark / DuckDB |
+| --- | --- | --- | --- | --- |
+| 1,995 | 0.1 MB | 4.3 ms | 113.6 ms | 26.4x |
+| 199,500 | 1.3 MB | 10.4 ms | 114.0 ms | 11.0x |
+| 1,995,000 | 12.6 MB | 18.3 ms | 165.2 ms | 9.0x |
+| 9,975,000 | 59.5 MB | 43.9 ms | 242.3 ms | 5.5x |
+| 49,875,000 | 293.7 MB | 174.3 ms | 585.8 ms | 3.4x |
+| 99,750,000 | 587.5 MB | 338.6 ms | 1081.9 ms | 3.2x |
+
+Spark session startup was 2130 ms on top of every figure in that column. A scheduled job pays
+that once per run; a long-lived cluster pays it once.
+
+DuckDB won at every scale, and the ratio narrowed from 26.4x to 3.2x rather than crossing over.
+
+The result is less interesting than why it happens. This is `local[*]` Spark: one machine, so it
+pays for shuffle, serialisation and task scheduling while getting none of the distribution those
+costs buy. Running it single-node and calling that a fair fight would be the wrong read. What the
+table actually shows is that the trigger for Spark is not a row count at all. At 100M rows and
+588 MB this workload still fits comfortably on one box, and as long as that is true, adding a
+cluster adds coordination cost and removes nothing.
+
+That is the threshold in the row above, stated precisely: the working set no longer fitting on one
+machine. Not volume. A number I can point at beats an opinion about Spark, which is the entire
+reason this file exists.
 
 ## Axes, not a ladder
 

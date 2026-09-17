@@ -1,0 +1,53 @@
+{
+  "startup_ms": 2130.0,
+  "scales": [
+    {
+      "rows": 1995,
+      "parquet_mb": 0.1,
+      "duckdb_ms": 4.3,
+      "spark_query_ms": 113.6,
+      "spark_total_ms": 2243.6,
+      "ratio_query_only": 26.4
+    },
+    {
+      "rows": 199500,
+      "parquet_mb": 1.3,
+      "duckdb_ms": 10.4,
+      "spark_query_ms": 114.0,
+      "spark_total_ms": 2244.0,
+      "ratio_query_only": 11.0
+    },
+    {
+      "rows": 1995000,
+      "parquet_mb": 12.6,
+      "duckdb_ms": 18.3,
+      "spark_query_ms": 165.2,
+      "spark_total_ms": 2295.2,
+      "ratio_query_only": 9.0
+    },
+    {
+      "rows": 9975000,
+      "parquet_mb": 59.5,
+      "duckdb_ms": 43.9,
+      "spark_query_ms": 242.3,
+      "spark_total_ms": 2372.3,
+      "ratio_query_only": 5.5
+    },
+    {
+      "rows": 49875000,
+      "parquet_mb": 293.7,
+      "duckdb_ms": 174.3,
+      "spark_query_ms": 585.8,
+      "spark_total_ms": 2715.8,
+      "ratio_query_only": 3.4
+    },
+    {
+      "rows": 99750000,
+      "parquet_mb": 587.5,
+      "duckdb_ms": 338.6,
+      "spark_query_ms": 1081.9,
+      "spark_total_ms": 3211.9,
+      "ratio_query_only": 3.2
+    }
+  ]
+}
