@@ -61,11 +61,37 @@ jobs:
           HN_RAW_DIR=tests/fixtures "$uv_bin/uv" run --extra dev ingest/pipeline.py >/dev/null
           mkdir -p ci-data && mv tests/postings.parquet ci-data/postings.parquet
 
-          docker run -d --name api -p 8000:8000 \
+          docker network create hn >/dev/null
+          docker run -d --name api --network hn -p 8000:8000 \
             -v "$PWD/ci-data:/data:ro" -e PARQUET_URI=/data/postings.parquet hn-api:ci
 
           for i in $(seq 30); do curl -sf localhost:8000/health >/dev/null && break; sleep 2; done
           curl -sf localhost:8000/health | tee /dev/stderr | grep -q '"status":"ok"'
           curl -sf "localhost:8000/api/jobs?limit=1" >/dev/null
-          echo "container serves"
-          docker rm -f api >/dev/null
+          echo "api container serves"
+
+
+      - name: build web image
+        uses: docker/build-push-action@v7
+        with:
+          context: web
+          file: web/Dockerfile
+          tags: hn-web:ci
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # The web container rendering its own shell proves nothing. These two routes are
+      # server-rendered from the API, so a 200 here means the whole path worked.
+      - name: run the web container and hit it
+        run: |
+          docker run -d --name web --network hn -p 3000:8080 \
+            -e API_URL=http://api:8000 hn-web:ci
+
+          for i in $(seq 30); do curl -sf localhost:3000/ >/dev/null && break; sleep 2; done
+          curl -sf localhost:3000/jobs | grep -q "Currently hiring"
+          curl -sf localhost:3000/evals | grep -qE "no runs yet|latest ·"
+          echo "web container serves"
+
+          docker rm -f api web >/dev/null
+          docker network rm hn >/dev/null
