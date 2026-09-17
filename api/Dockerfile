@@ -47,10 +47,12 @@ ENV PATH="/app/.venv/bin:$PATH" \
 USER app
 EXPOSE 8000
 
-# Cloud Run sets $PORT, so it has to be expanded at runtime — hence shell form. `exec` keeps
-# uvicorn as PID 1 so SIGTERM reaches it and the container stops cleanly.
+# Cloud Run sets $PORT, so it has to be expanded at runtime. JSON form with an explicit
+# `/bin/sh -c` gets that expansion without tripping the JSONArgsRecommended lint that bare
+# shell form does. `exec` keeps uvicorn as PID 1 so SIGTERM reaches it and the container
+# stops cleanly.
 #
 # `python -m uvicorn`, not the `uvicorn` shim: console scripts bake an absolute interpreter
 # path at install time, and a venv that moves between build stages leaves them pointing at a
 # path that no longer exists. The module form uses whichever python is on PATH.
-CMD exec python -m uvicorn api.main:app --host 0.0.0.0 --port "${PORT:-8000}"
+CMD ["/bin/sh", "-c", "exec python -m uvicorn api.main:app --host 0.0.0.0 --port \"${PORT:-8000}\""]
