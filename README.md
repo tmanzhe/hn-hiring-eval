@@ -8,7 +8,19 @@ error bars on it.
 
 ## Status
 
-Scaffolded. Nothing measured yet.
+The harness is built. Nothing is scored yet.
+
+What runs today: fetch and the rules parser over a 1,995-posting corpus, normalization and the
+Parquet write, per-field scorers that sort every prediction into extracted, abstained, missed or
+hallucinated, a stratified sampler that runs a power analysis per slice before any labeling, a
+resumable labeling tool that never shows the annotator parser output, the FastAPI service over
+DuckDB, and the A to E config ladder plus a W workflow rung. `uv run agent/demo.py` drives the
+real graph against a scripted model, so it runs with no API key. 266 tests, green in CI.
+
+What does not exist yet: `evals/labeled.jsonl` and `evals/runs.jsonl`. The 60 posts are not
+labeled, so there is no accuracy, cost or hallucination number here. The coverage percentages
+`check.sh` prints say how often the rules pass produced a value, not whether that value was
+right.
 
 Numbers in this README get filled in from `evals/runs.jsonl` at step 34. They stay empty until
 then. A placeholder number is worse than no number.
