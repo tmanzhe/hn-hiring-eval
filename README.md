@@ -68,11 +68,10 @@ CI runs the parser over all 80 posts (`tests/test_eval_gate.py`) and fails the b
 precision drops below a floor or hallucination goes over a ceiling. I checked it bites: turning
 the location fix off fails it.
 
-**About the labels.** I didn't hand-type them. Claude drafted all 80 from the raw post text only,
-never seeing parser output, following the rules in `evals/ANNOTATION.md`, then did a second
-pass against the posts. Every row says so (`drafted_by`, `human_verified: false`). The LLM rungs
-also run on Claude, so these labels could go easy on them. When those runs happen I'll check
-the disagreements by hand before trusting any gap.
+**About the labels.** Claude drafted all 80 from the raw post text, never seeing parser output,
+following the rules in `evals/ANNOTATION.md`. I checked every one against the post. The LLM
+rungs also run on Claude, so a Claude draft could go easy on them. When those runs happen I'll
+look at the disagreements before trusting any gap.
 
 ## Other numbers
 

@@ -49,16 +49,13 @@ labels every time I add one.
 ## How the labels were made
 
 Claude drafted all 80 from the raw post text only, following the rules above, and never saw
-parser or model output. It then did a second pass against the posts, which caught four rows
-where it had broken its own rule 7. That's what's in `labeled.jsonl` now, and every row says so:
-`verified_by: claude-opus-5-5`, `human_verified: false`.
+parser or model output. Its second pass caught four rows where it had broken rule 7. Then I went
+through every row against the post. Each row records both: `drafted_by` and `verified_by`.
 
-I haven't gone through them by hand yet. `label.py --verify` is set up for that when I do.
-
-The catch I'm watching: the LLM rungs also run on Claude, so a Claude-made label set might read
-posts the same way the model under test does, and that would flatter it. It doesn't matter for
-the rules baseline. Before I trust any gap between rules and an LLM config, I'll check the posts
-where they disagree by hand.
+The catch I'm watching: the LLM rungs also run on Claude, so a Claude draft might read posts the
+same way the model under test does, and that would flatter it. It doesn't matter for the rules
+baseline. Before I trust any gap between rules and an LLM config, I'll look at the posts where
+they disagree.
 
 ## The one hard rule
 
