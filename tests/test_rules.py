@@ -125,3 +125,31 @@ class TestNormalize:
         out = normalize(ex)
         assert out.salary_period == "hour", "provenance must survive"
         assert out.salary_min == 30 * 2080, "column must be comparable across posts"
+
+
+class TestLocationSlot:
+    """Every case is a real header slot from the labeled sample. The arrangement belongs in
+    `remote`, not in `location`."""
+
+    @pytest.mark.parametrize(
+        "slot,expected",
+        [
+            ("Hybrid in Seattle, WA", "Seattle, WA"),
+            ("Onsite (Burlingame, CA)", "Burlingame, CA"),
+            ("HYBRID (Columbia, MD)", "Columbia, MD"),
+            ("NYC (In-Office 3-4 days)", "NYC"),
+            ("Boston or Remote (US)", "Boston"),
+            ("Chicago, IL / Remote", "Chicago, IL"),
+            ("London, UK, hybrid", "London, UK"),
+            ("REMOTE OR HYBRID (US, Ireland)", "US, Ireland"),
+            ("Remote (Germany/UK)", "Germany, UK"),
+            ("Remote (US time zone)", "US"),
+            ("Hong Kong (onsite)", "Hong Kong"),
+        ],
+    )
+    def test_arrangement_is_stripped(self, slot, expected):
+        assert parse(f"Acme | Engineer | {slot} | Full-time")[0].location == expected
+
+    @pytest.mark.parametrize("slot", ["Remote", "ONSITE", "Remote (Helsinki HQ)"])
+    def test_no_place_means_null(self, slot):
+        assert parse(f"Acme | Engineer | {slot} | Full-time")[0].location is None

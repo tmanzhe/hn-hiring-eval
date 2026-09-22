@@ -46,16 +46,19 @@ labels every time I add one.
 8. **Not a job posting** (someone looking for work) gets every field null and a note.
 9. **Closed posts** get labeled anyway. The extractor sees them too.
 
-## How the first pass was made
+## How the labels were made
 
-I had Claude draft `drafts.jsonl` from the raw post text only, following the rules above. It
-never saw parser or model output. Nothing counts as a label until I've gone through it field by
-field in `label.py --verify` with the post right there. Only then does a row land in
-`labeled.jsonl`, and it keeps a note of who drafted it.
+Claude drafted all 80 from the raw post text only, following the rules above, and never saw
+parser or model output. It then did a second pass against the posts, which caught four rows
+where it had broken its own rule 7. That's what's in `labeled.jsonl` now, and every row says so:
+`verified_by: claude-opus-5-5`, `human_verified: false`.
 
-The catch I'm watching: the LLM rungs also run on Claude, so a Claude draft might read posts the
-same way the model under test does, and that would flatter it. The verify pass is how I push back
-on that, and the held-out split is where it'd show up if I missed some.
+I haven't gone through them by hand yet. `label.py --verify` is set up for that when I do.
+
+The catch I'm watching: the LLM rungs also run on Claude, so a Claude-made label set might read
+posts the same way the model under test does, and that would flatter it. It doesn't matter for
+the rules baseline. Before I trust any gap between rules and an LLM config, I'll check the posts
+where they disagree by hand.
 
 ## The one hard rule
 

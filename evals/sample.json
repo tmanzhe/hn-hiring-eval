@@ -1,0 +1,417 @@
+{
+  "seed": 20260801,
+  "n": 80,
+  "rule": "proportional allocation with a per-stratum floor; strata are (format, salary, length) computed from post text",
+  "strata": {
+    "pipe / has_salary / long": 6,
+    "pipe / has_salary / short": 3,
+    "pipe / no_salary / long": 17,
+    "pipe / no_salary / short": 34,
+    "prose / has_salary / long": 3,
+    "prose / has_salary / short": 3,
+    "prose / no_salary / long": 3,
+    "prose / no_salary / short": 11
+  },
+  "posts": [
+    {
+      "comment_id": "47986820",
+      "split": "dev",
+      "stratum": "prose / no_salary / short"
+    },
+    {
+      "comment_id": "47603990",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47603496",
+      "split": "held-out",
+      "stratum": "prose / no_salary / short"
+    },
+    {
+      "comment_id": "48357761",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "48752786",
+      "split": "dev",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "48102189",
+      "split": "dev",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "46861945",
+      "split": "held-out",
+      "stratum": "pipe / has_salary / short"
+    },
+    {
+      "comment_id": "46888712",
+      "split": "dev",
+      "stratum": "prose / no_salary / short"
+    },
+    {
+      "comment_id": "47614308",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "48749084",
+      "split": "dev",
+      "stratum": "prose / no_salary / short"
+    },
+    {
+      "comment_id": "47308369",
+      "split": "dev",
+      "stratum": "prose / no_salary / short"
+    },
+    {
+      "comment_id": "47224803",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47978746",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "46903595",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47256159",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "48361945",
+      "split": "held-out",
+      "stratum": "pipe / has_salary / short"
+    },
+    {
+      "comment_id": "48362254",
+      "split": "dev",
+      "stratum": "pipe / has_salary / long"
+    },
+    {
+      "comment_id": "46959004",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "48023051",
+      "split": "dev",
+      "stratum": "prose / has_salary / short"
+    },
+    {
+      "comment_id": "48365334",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47220965",
+      "split": "dev",
+      "stratum": "prose / no_salary / short"
+    },
+    {
+      "comment_id": "46859629",
+      "split": "dev",
+      "stratum": "prose / no_salary / short"
+    },
+    {
+      "comment_id": "47605460",
+      "split": "dev",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "47980297",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "46859342",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "48750014",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47230726",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "48365376",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "48067640",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "48819370",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47221096",
+      "split": "held-out",
+      "stratum": "pipe / has_salary / long"
+    },
+    {
+      "comment_id": "47223968",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47249983",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "47676433",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "46859924",
+      "split": "dev",
+      "stratum": "prose / no_salary / short"
+    },
+    {
+      "comment_id": "48804695",
+      "split": "dev",
+      "stratum": "prose / no_salary / short"
+    },
+    {
+      "comment_id": "46858532",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "48408853",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "48357800",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "46857529",
+      "split": "held-out",
+      "stratum": "prose / has_salary / short"
+    },
+    {
+      "comment_id": "47220091",
+      "split": "dev",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "47220989",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47220599",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "46869120",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47976769",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "48021354",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "46870506",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47609507",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47975959",
+      "split": "dev",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "47976662",
+      "split": "held-out",
+      "stratum": "pipe / has_salary / long"
+    },
+    {
+      "comment_id": "46873079",
+      "split": "held-out",
+      "stratum": "prose / has_salary / long"
+    },
+    {
+      "comment_id": "47976872",
+      "split": "dev",
+      "stratum": "pipe / has_salary / long"
+    },
+    {
+      "comment_id": "46857494",
+      "split": "held-out",
+      "stratum": "pipe / has_salary / long"
+    },
+    {
+      "comment_id": "47614969",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "46863917",
+      "split": "dev",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "48747987",
+      "split": "dev",
+      "stratum": "prose / no_salary / long"
+    },
+    {
+      "comment_id": "47979394",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "46875351",
+      "split": "dev",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "47232351",
+      "split": "dev",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "48358258",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47225525",
+      "split": "dev",
+      "stratum": "pipe / has_salary / short"
+    },
+    {
+      "comment_id": "47632126",
+      "split": "dev",
+      "stratum": "prose / no_salary / long"
+    },
+    {
+      "comment_id": "48357775",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "47625506",
+      "split": "dev",
+      "stratum": "prose / has_salary / long"
+    },
+    {
+      "comment_id": "47318659",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "46858476",
+      "split": "dev",
+      "stratum": "prose / no_salary / short"
+    },
+    {
+      "comment_id": "48794583",
+      "split": "dev",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "46893914",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47604760",
+      "split": "held-out",
+      "stratum": "prose / has_salary / long"
+    },
+    {
+      "comment_id": "47229954",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "46863837",
+      "split": "held-out",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47673074",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "47241526",
+      "split": "dev",
+      "stratum": "prose / no_salary / short"
+    },
+    {
+      "comment_id": "47255238",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "48749443",
+      "split": "dev",
+      "stratum": "prose / no_salary / long"
+    },
+    {
+      "comment_id": "47610945",
+      "split": "dev",
+      "stratum": "prose / has_salary / short"
+    },
+    {
+      "comment_id": "48787393",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "48376486",
+      "split": "dev",
+      "stratum": "pipe / no_salary / long"
+    },
+    {
+      "comment_id": "47605264",
+      "split": "dev",
+      "stratum": "pipe / no_salary / short"
+    },
+    {
+      "comment_id": "48372101",
+      "split": "held-out",
+      "stratum": "pipe / has_salary / long"
+    }
+  ]
+}

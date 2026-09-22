@@ -97,3 +97,10 @@ class TestAttribution:
 
         _, model, _ = get_predictor("rules")
         assert model == "n/a"
+
+    def test_hourly_label_is_annualised_before_comparing(self):
+        """AES in the sample: the post says $30-40/hr, the label records 30-40 hour, and the
+        prediction arrives annualised by normalize(). Same salary, so it must score extracted."""
+        pairs = [(Extraction(salary_min=62400, salary_max=83200, salary_period="hour"),
+                  {"salary_min": 30, "salary_max": 40, "salary_period": "hour"})]
+        assert score_rows(pairs)["salary"]["outcomes"] == {"extracted": 1}

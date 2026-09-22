@@ -37,7 +37,7 @@ from evals.scorers import (
     score_set_field,
 )
 from ingest.corpus import by_id, to_text
-from ingest.normalize import normalize
+from ingest.normalize import normalize, to_annual
 from ingest.rules import parse
 
 LABELS = Path(__file__).resolve().parent / "labeled.jsonl"
@@ -99,6 +99,14 @@ def slice_of(text: str) -> str:
     return "prose"
 
 
+def _label_salary(t):
+    """Labels record pay as the post states it ($30/hr stays 30). Predictions come out of
+    normalize() already annual, so the label goes through the same conversion before comparing.
+    Without this every hourly or monthly salary scores as wrong even when the parser nailed it."""
+    period = t.get("salary_period") or "year"
+    return to_annual(t["salary_min"], period), to_annual(t.get("salary_max"), period)
+
+
 def score_rows(pairs):
     """pairs: list of (Extraction, label dict). Returns the scores block."""
     return {
@@ -110,7 +118,7 @@ def score_rows(pairs):
             [
                 (
                     None if p.salary_min is None else (p.salary_min, p.salary_max),
-                    None if t.get("salary_min") is None else (t["salary_min"], t.get("salary_max")),
+                    None if t.get("salary_min") is None else _label_salary(t),
                 )
                 for p, t in pairs
             ],
@@ -179,14 +187,14 @@ def report():
     if not RUNS.exists():
         raise SystemExit("no runs yet. try: uv run evals/run.py --config rules")
     rows = [json.loads(line) for line in RUNS.read_text().splitlines() if line.strip()]
-    print(f"{'config':<12} {'n':>4} {'salary cov':>11} {'salary prec':>12} "
-          f"{'halluc':>7} {'skills F1':>10} {'p95 ms':>8}")
-    print("-" * 70)
+    print(f"{'config':<22} {'split':<9} {'n':>3} {'salary prec':>12} {'loc prec':>9} "
+          f"{'loc halluc':>11} {'skills F1':>10} {'p95 ms':>7}")
+    print("-" * 90)
     for r in rows:
-        s, k = r["scores"]["salary"], r["scores"]["skills"]
-        print(f"{r['config']:<12} {r['n']:>4} {s['coverage']:>10.1%} "
-              f"{s['precision']:>11.1%} {s['hallucination_rate']:>6.1%} "
-              f"{k['macro_f1']:>10.3f} {r['p95_ms']:>8.0f}")
+        s, loc, k = r["scores"]["salary"], r["scores"]["location"], r["scores"]["skills"]
+        print(f"{r['config']:<22} {r['split']:<9} {r['n']:>3} {s['precision']:>11.1%} "
+              f"{loc['precision']:>8.1%} {loc['hallucination_rate']:>10.1%} "
+              f"{k['macro_f1']:>10.3f} {r['p95_ms']:>7.0f}")
     print("\nprecision carries a 95% interval — see precision_ci95 in runs.jsonl. At small n a "
           "few points of difference is noise.")
 

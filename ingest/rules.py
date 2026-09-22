@@ -181,6 +181,33 @@ LOCATION_HINT = re.compile(
 )
 
 
+# The header's location slot usually carries the work arrangement too: "Hybrid in Seattle, WA",
+# "REMOTE (US)", "Onsite (Burlingame, CA)". Scoring the rules baseline showed that was most of
+# the location misses (evals/FAILURES.md), so the slot gets split and the arrangement words go.
+_LOC_SPLIT = re.compile(r"\s/\s|[()+]|\bor\b", re.IGNORECASE)
+_LOC_NOISE = re.compile(
+    r"\b(?:remote|hybrid|onsite|on-site|in[- ]office|in[- ]person|wfh|only|part|preferred|"
+    r"overlap|friendly|time ?zones?|hours|days?|\d+(?:-\d+)?)\b|-(?=\s|$)",
+    re.IGNORECASE,
+)
+
+
+def _clean_location(part):
+    """The place in a location slot, with the remote/hybrid/onsite wording stripped. None if
+    nothing but the arrangement was there. HQ mentions are dropped: a remote role with an HQ
+    city isn't located there (ANNOTATION.md rule 5)."""
+    for chunk in _LOC_SPLIT.split(part):
+        if re.search(r"\bHQ\b|meet-?ups?", chunk, re.IGNORECASE):
+            continue
+        chunk = _LOC_NOISE.sub(" ", chunk.replace("/", ", ").replace("&", ","))
+        chunk = re.sub(r"^\s*in\b", " ", chunk.strip(), flags=re.IGNORECASE)
+        chunk = re.sub(r"\s+", " ", chunk).strip(" ,;:-")
+        chunk = re.sub(r"\s*,\s*(?:,\s*)*", ", ", chunk)
+        if re.search(r"[A-Za-z]{2}", chunk):
+            return chunk
+    return None
+
+
 def _header(text):
     """First non-empty line. The pipe-delimited convention lives here when it's used at all."""
     for line in text.splitlines():
@@ -216,7 +243,13 @@ def parse(text):
 
     roles = [p for p in parts[1:] if ROLE_HINT.search(p)][:3]
     location = next(
-        (p for p in parts[1:] if LOCATION_HINT.search(p) and not ROLE_HINT.search(p)), None
+        (
+            loc
+            for p in parts[1:]
+            if LOCATION_HINT.search(p) and not ROLE_HINT.search(p)
+            if (loc := _clean_location(p))
+        ),
+        None,
     )
 
     lo, hi, cur, period = find_salary(text)

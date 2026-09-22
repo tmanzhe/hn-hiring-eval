@@ -14,7 +14,10 @@ through embedded DuckDB. On the eval side there are scorers for every field, a s
 sampler, and a labeling tool that deliberately hides the parser's output from whoever's
 labeling. The configs go from A (rules only) up to E, plus a W rung for the agent workflow.
 `uv run agent/demo.py` runs the real agent graph against a scripted model, so you can poke at it
-without an API key. 266 tests, CI is green.
+without an API key. 288 tests, CI is green.
+
+80 posts are labeled and the rules baseline is scored. The LLM configs haven't been run yet
+because they need an API key, so the cost vs quality table only has the free rung in it so far.
 
 ## How I score things
 
@@ -34,7 +37,44 @@ approximation falls apart at n=40 when p is close to 1. It'll happily give you a
 goes past 100%, and that's exactly where these numbers live. If two configs are closer than
 their intervals, I call it noise and move on.
 
-## Numbers so far
+## Eval results, rules baseline
+
+80 labeled posts, split 53 dev / 27 held-out. I tuned against dev only. Held-out got looked at
+twice, once before the fix and once after, and that's it.
+
+| Field      | Dev (n=53)            | Held-out (n=27)       | Halluc, held-out |
+| ---------- | --------------------- | --------------------- | ---------------: |
+| company    | 89.2% (75 to 96)      | 78.3% (58 to 90)      |             0.0% |
+| salary     | 100% (61 to 100)      | 88.9% (56 to 98)      |             3.7% |
+| location   | 82.1% (64 to 92)      | 70.6% (47 to 87)      |             3.7% |
+| skills F1  | 0.718                 | 0.671                 |                  |
+| remote     | 88.7% accuracy        | 88.9% accuracy        |                  |
+| seniority  | 71.7% accuracy        | 70.4% accuracy        |                  |
+
+Precision with 95% Wilson intervals in brackets. Precision here means "when it answered, was it
+right", and coverage is tracked separately in `evals/runs.jsonl`. The rules pass takes about a
+millisecond a post and costs nothing.
+
+The big move was location. At baseline it was 8.1% precise on dev and 17.4% on held-out, with 9
+to 15% of answers made up. Bucketing the misses showed 33 of 43 were one bug: the parser was
+copying `Hybrid in Seattle, WA` and `REMOTE (US)` straight into the location column. Stripping
+the work arrangement out took it to 82% on dev and 71% on held-out, and cut location
+hallucination to 2 to 4%. The full breakdown by cause is in `evals/FAILURES.md`.
+
+What's left is mostly posts without a pipe header, where the company and place only show up in
+prose. Regex can't do anything with those, which is exactly the case the LLM fallback is for.
+
+CI runs the parser over all 80 posts (`tests/test_eval_gate.py`) and fails the build if
+precision drops below a floor or hallucination goes over a ceiling. I checked it bites: turning
+the location fix off fails it.
+
+**About the labels.** I didn't hand-type them. Claude drafted all 80 from the raw post text only,
+never seeing parser output, following the rules in `evals/ANNOTATION.md`, then did a second
+pass against the posts. Every row says so (`drafted_by`, `human_verified: false`). The LLM rungs
+also run on Claude, so these labels could go easy on them. When those runs happen I'll check
+the disagreements by hand before trusting any gap.
+
+## Other numbers
 
 **Power analysis, done before labeling anything.** `evals/sample.py --report` tells you how
 tight each slice's interval will be at an assumed 80% accuracy, before you sink hours into

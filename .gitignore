@@ -44,12 +44,3 @@ data/needs_llm.json
 # pipeline output when CI points HN_RAW_DIR at the fixtures
 tests/postings.parquet
 tests/needs_llm.json
-
-# eval run log, regenerated
-evals/runs.jsonl
-
-# drawn sample, regenerate with evals/sample.py
-evals/sample.json
-
-# hand labels and the drawn sample — mine, and regenerable
-evals/labeled.jsonl
