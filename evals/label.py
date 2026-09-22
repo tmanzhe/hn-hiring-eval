@@ -3,6 +3,7 @@
     uv run evals/label.py              # start, or resume exactly where I stopped
     uv run evals/label.py --progress   # how far in, per stratum
     uv run evals/label.py --review     # re-open posts I flagged as uncertain
+    uv run evals/label.py --verify     # check drafts.jsonl against each post, field by field
 
 Writes `evals/labeled.jsonl` — one JSON object per post, matching the schema. Saves after every
 post, so quitting mid-way loses nothing.
@@ -13,7 +14,9 @@ post, so quitting mid-way loses nothing.
 longer writing ground truth, I'm agreeing with a machine — and a labeled set contaminated that
 way scores its own extractor generously and nobody can tell from the outside.
 
-That's why there's no "accept suggestion" key. Every value gets typed.
+That's why the blank-slate mode has no "accept suggestion" key. `--verify` does keep a value on
+Enter, but what it shows is a draft written from the post text alone (see ANNOTATION.md), never
+parser or model output, and every row it saves records who drafted it.
 
 ## Uncertainty is data
 
@@ -35,6 +38,7 @@ from ingest.corpus import by_id, to_text
 HERE = Path(__file__).resolve().parent
 SAMPLE = HERE / "sample.json"
 LABELS = HERE / "labeled.jsonl"
+DRAFTS = HERE / "drafts.jsonl"
 
 REMOTE = {"r": "remote", "h": "hybrid", "o": "onsite"}
 SENIORITY = {"j": "junior", "m": "mid", "s": "senior", "t": "staff+"}
@@ -137,6 +141,92 @@ def label_one(post: dict, meta: dict) -> dict | None:
     return row
 
 
+FIELDS = [
+    ("company", {}), ("location", {}), ("remote", {"allow": REMOTE}),
+    ("salary_min", {"cast": int}), ("salary_max", {"cast": int}),
+    ("salary_currency", {}), ("salary_period", {"allow": PERIOD}),
+    ("seniority", {"allow": SENIORITY}), ("skills", {}),
+]
+
+
+def verify_one(post: dict, draft: dict) -> dict | None:
+    """Check a drafted row against the post. Enter keeps the draft, anything typed replaces it,
+    `-` clears it to null, `?` flags it. Returns None if the user quit."""
+    text = to_text(post.get("comment_text"))
+    print("\n" + "=" * 78)
+    print(f"id={draft['comment_id']}   {draft['stratum']}   [{draft['split']}]")
+    print("=" * 78)
+    print(text)
+    print("-" * 78)
+    if draft.get("note"):
+        print(f"  note: {draft['note']}")
+    if draft.get("uncertain"):
+        print(f"  drafter flagged: {', '.join(draft['uncertain'])}")
+    print("  enter = keep   type = replace   - = null   ? = ambiguous   q = save and quit")
+
+    row = {k: draft[k] for k in ("comment_id", "split", "stratum")}
+    row.update(done=True, uncertain=[], drafted_by=draft.get("drafted_by"), verified=True)
+    for name, kw in FIELDS:
+        shown = ", ".join(draft[name]) if name == "skills" else draft[name]
+        hint = f" [{'/'.join(kw['allow'])}]" if "allow" in kw else ""
+        while True:
+            raw = input(f"  {name}{hint} = {shown!r}: ").strip()
+            if raw.lower() == "q":
+                return None
+            if raw == "":
+                row[name] = draft[name]
+            elif raw == "-":
+                row[name] = [] if name == "skills" else None
+            elif raw == "?":
+                row["uncertain"].append(name)
+                row[name] = draft[name]
+            elif name == "skills":
+                row[name] = [s.strip() for s in raw.split(",") if s.strip()]
+            elif "allow" in kw:
+                if raw.lower() not in kw["allow"]:
+                    print(f"    one of {'/'.join(kw['allow'])}")
+                    continue
+                row[name] = kw["allow"][raw.lower()]
+            elif "cast" in kw:
+                try:
+                    row[name] = kw["cast"](raw)
+                except ValueError:
+                    print("    couldn't read that as a number")
+                    continue
+            else:
+                row[name] = raw
+            break
+    if draft.get("note"):
+        row["note"] = draft["note"]
+    return row
+
+
+def verify(sample: dict, done: dict) -> None:
+    drafts = {
+        r["comment_id"]: r
+        for r in (json.loads(x) for x in DRAFTS.read_text().splitlines() if x.strip())
+    }
+    todo = [p for p in sample["posts"] if p["comment_id"] not in done and p["comment_id"] in drafts]
+    if not todo:
+        print("nothing left to verify")
+        return
+    print(f"{len(done)} done, {len(todo)} drafts to check.")
+    posts = {c["objectID"]: c for c in by_id([p["comment_id"] for p in todo])}
+    for meta in todo:
+        try:
+            row = verify_one(posts[meta["comment_id"]], drafts[meta["comment_id"]])
+        except (EOFError, KeyboardInterrupt):
+            print("\nstopping.")
+            break
+        if row is None:
+            print("saved, stopping.")
+            break
+        done[row["comment_id"]] = row
+        save(done)
+        print(f"  saved ({len(done)}/{len(sample['posts'])})")
+    progress(sample, done)
+
+
 def progress(sample: dict, done: dict) -> None:
     by_stratum = Counter()
     done_by_stratum = Counter()
@@ -162,6 +252,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--progress", action="store_true")
     ap.add_argument("--review", action="store_true", help="re-open posts flagged uncertain")
+    ap.add_argument("--verify", action="store_true", help="check drafts.jsonl field by field")
     args = ap.parse_args()
 
     if not SAMPLE.exists():
@@ -172,6 +263,10 @@ def main():
 
     if args.progress:
         progress(sample, done)
+        return
+
+    if args.verify:
+        verify(sample, done)
         return
 
     if args.review:

@@ -21,7 +21,41 @@ salary" says something about the ceiling on any extractor, mine included.
 One line per answer above. Add rules as new cases come up, and go back and re-check earlier
 labels every time I add one.
 
-1. _(fill in)_
+1. **Salary** is a stated number or range for base pay. "Competitive", equity only, and signing
+   bonuses are null. A single figure like `$80k` is min = max = 80000. Amounts are stored raw
+   (`150000`, not `150`), with the period as stated. Hourly stays hourly. `normalize.py`
+   annualises, the label doesn't.
+2. **Currency** is ISO. `$` is USD unless the post says otherwise. `$` on a Canadian post gets
+   USD and a `?`.
+3. **Multi-role posts** are one row. Skills are the union across roles. If the roles carry
+   different ranges, take the first one stated and flag salary `?`.
+4. **Seniority** comes from the title. Intern maps to junior. Senior and Sr. map to senior.
+   Staff, Principal, Lead, Head of, CTO and co-founder map to staff+. "Founding engineer" and
+   years-of-experience alone map to null. Roles at different levels in one post map to null.
+5. **Location** is where the job is: a city if one is named, otherwise the region the post
+   restricts hiring to ("US", "EU"). Several cities means the first one. A remote role with only
+   an HQ mentioned is null.
+6. **Remote** is `remote` if working remotely is allowed at all ("NYC or Remote" counts).
+   `hybrid` if some office days are required, including "onsite, 3 days a week" and "onsite
+   (hybrid OK)". `onsite` only if the post says so. If the post doesn't say, it's null.
+7. **Skills** are named technologies: languages, frameworks, databases, clouds and tools the
+   role uses or asks for, nice-to-haves included. Concepts ("distributed systems", "ML") are not
+   skills. Customers, investors and model vendors named in passing are not skills. Cloud
+   sub-services collapse to the provider (ECS goes to AWS, Cloud Run to Google Cloud). Rails is
+   Ruby on Rails, and Ruby only counts as its own skill if the post names it on its own.
+8. **Not a job posting** (someone looking for work) gets every field null and a note.
+9. **Closed posts** get labeled anyway. The extractor sees them too.
+
+## How the first pass was made
+
+The first pass in `drafts.jsonl` was drafted by Claude from the post text alone. It never saw
+parser or model output, and it followed the rules above. Every row in `labeled.jsonl` then got a
+field-by-field check from me in `label.py --verify` against the raw post. A row only lands in
+`labeled.jsonl` after that check, and it records who drafted it.
+
+One bias I'm keeping in view: the LLM rungs call Claude too, so a Claude draft could lean toward
+the way Claude reads a post. The verify pass is there to catch that, and the held-out split is
+where it would show up.
 
 ## The one hard rule
 
