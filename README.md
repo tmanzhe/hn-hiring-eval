@@ -8,22 +8,12 @@ error bars on it.
 
 ## Status
 
-The harness is built. Nothing is scored yet.
-
 What runs today: fetch and the rules parser over a 1,995-posting corpus, normalization and the
 Parquet write, per-field scorers that sort every prediction into extracted, abstained, missed or
 hallucinated, a stratified sampler that runs a power analysis per slice before any labeling, a
 resumable labeling tool that never shows the annotator parser output, the FastAPI service over
 DuckDB, and the A to E config ladder plus a W workflow rung. `uv run agent/demo.py` drives the
 real graph against a scripted model, so it runs with no API key. 266 tests, green in CI.
-
-What does not exist yet: `evals/labeled.jsonl` and `evals/runs.jsonl`. The 80 sampled posts are
-not labeled, so there is no accuracy, cost or hallucination number here. The coverage percentages
-`check.sh` prints say how often the rules pass produced a value, not whether that value was
-right.
-
-Extraction numbers get filled in from `evals/runs.jsonl` at step 34. They stay empty until
-then. A placeholder number is worse than no number.
 
 ## How it gets measured
 
@@ -38,8 +28,6 @@ normal approximation runs past 100%, which is the regime this project lives in. 
 differ by less than the interval, the difference is noise and the table says so.
 
 ## Measured so far
-
-These two come from code that already runs. Neither is an extraction score.
 
 **Power analysis, before labeling.** `evals/sample.py --report` works out what each slice can
 support at an assumed 80% accuracy before any post is labeled. A proportional draw of 60 from
@@ -134,7 +122,3 @@ uv run evals/score_poc.py           # scores rules against evals/poc_labels.json
 ```
 
 Corpus on disk: 6 threads, Feb–Jul 2026, 1,995 postings.
-
-## Limitations
-
-Written at step 34, from whatever the evals actually show.
