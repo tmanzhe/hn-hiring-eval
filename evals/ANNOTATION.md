@@ -48,14 +48,14 @@ labels every time I add one.
 
 ## How the first pass was made
 
-The first pass in `drafts.jsonl` was drafted by Claude from the post text alone. It never saw
-parser or model output, and it followed the rules above. Every row in `labeled.jsonl` then got a
-field-by-field check from me in `label.py --verify` against the raw post. A row only lands in
-`labeled.jsonl` after that check, and it records who drafted it.
+I had Claude draft `drafts.jsonl` from the raw post text only, following the rules above. It
+never saw parser or model output. Nothing counts as a label until I've gone through it field by
+field in `label.py --verify` with the post right there. Only then does a row land in
+`labeled.jsonl`, and it keeps a note of who drafted it.
 
-One bias I'm keeping in view: the LLM rungs call Claude too, so a Claude draft could lean toward
-the way Claude reads a post. The verify pass is there to catch that, and the held-out split is
-where it would show up.
+The catch I'm watching: the LLM rungs also run on Claude, so a Claude draft might read posts the
+same way the model under test does, and that would flatter it. The verify pass is how I push back
+on that, and the held-out split is where it'd show up if I missed some.
 
 ## The one hard rule
 

@@ -1,37 +1,44 @@
 # hn-hiring-eval
 
-Pulls job postings out of HN "Who is hiring" threads and turns them into structured rows.
+Scrapes HN "Who is hiring" threads and turns each posting into a structured row.
 
-The extractor is the excuse. What I actually want is the eval harness around it: a labeled set,
-a scorer per field, a count of what breaks and how often, and a cost/quality table with real
-error bars on it.
+Honestly the extractor is the boring part. I built it so I'd have something real to point an
+eval harness at: a labeled set, a scorer per field, a tally of what breaks and how often, and a
+cost vs quality table with actual error bars. That harness is the thing I care about.
 
-## Status
+## Where it's at
 
-What runs today: fetch and the rules parser over a 1,995-posting corpus, normalization and the
-Parquet write, per-field scorers that sort every prediction into extracted, abstained, missed or
-hallucinated, a stratified sampler that runs a power analysis per slice before any labeling, a
-resumable labeling tool that never shows the annotator parser output, the FastAPI service over
-DuckDB, and the A to E config ladder plus a W workflow rung. `uv run agent/demo.py` drives the
-real graph against a scripted model, so it runs with no API key. 266 tests, green in CI.
+The whole pipeline runs end to end. It pulls 1,995 postings across six monthly threads, runs a
+rules parser over them, normalizes, and writes Parquet. A FastAPI service reads that Parquet
+through embedded DuckDB. On the eval side there are scorers for every field, a stratified
+sampler, and a labeling tool that deliberately hides the parser's output from whoever's
+labeling. The configs go from A (rules only) up to E, plus a W rung for the agent workflow.
+`uv run agent/demo.py` runs the real agent graph against a scripted model, so you can poke at it
+without an API key. 266 tests, CI is green.
 
-## How it gets measured
+## How I score things
 
-Every field prediction lands in one of four buckets: extracted (right), abstained (null when the
-label is null), missed (null when the label has a value) or hallucinated (a value the post does
-not support). Hallucination rate is reported on its own line. It never gets averaged into an
-accuracy number, because a field that is 90% right and 5% invented is a different thing from
-one that is 90% right and 10% blank.
+Every field prediction gets bucketed four ways:
 
-Every proportion comes with a 95% Wilson interval (`evals/scorers.py`). At n=40 and p near 1 the
-normal approximation runs past 100%, which is the regime this project lives in. If two configs
-differ by less than the interval, the difference is noise and the table says so.
+- extracted: it's right
+- abstained: it's null and the label is null too, which counts as a win
+- missed: it's null but the post actually says something
+- hallucinated: it made up a value the post doesn't support
 
-## Measured so far
+Hallucination rate gets its own line and never gets averaged into accuracy. A field that's 90%
+right and 5% made up is a very different beast from one that's 90% right and 10% blank, and one
+blended number would hide that.
 
-**Power analysis, before labeling.** `evals/sample.py --report` works out what each slice can
-support at an assumed 80% accuracy before any post is labeled. A proportional draw of 60 from
-the 1,995-post corpus looked like this:
+Every proportion ships with a 95% Wilson interval (`evals/scorers.py`). The usual normal
+approximation falls apart at n=40 when p is close to 1. It'll happily give you an interval that
+goes past 100%, and that's exactly where these numbers live. If two configs are closer than
+their intervals, I call it noise and move on.
+
+## Numbers so far
+
+**Power analysis, done before labeling anything.** `evals/sample.py --report` tells you how
+tight each slice's interval will be at an assumed 80% accuracy, before you sink hours into
+labeling. A plain proportional draw of 60 posts came out like this:
 
 | Slice          |  n | ± at 80% | Verdict        |
 | -------------- | -: | -------: | -------------- |
@@ -40,24 +47,26 @@ the 1,995-post corpus looked like this:
 | has salary     | 17 |      17% | weak           |
 | length: long   | 24 |      16% | weak           |
 
-Prose posts are where the rules parser gives up and the LLM fallback takes over, so prose vs
-pipe is the comparison the cost argument depends on. Eight posts and ±26 points cannot tell 60%
-from 90%. I redrew at n=80 with prose oversampled to 20 (seed 20260801, 53 dev / 27 held-out):
+That prose row was a problem. Prose posts are where regex gives up and the LLM fallback kicks
+in, so prose vs pipe is the comparison the whole cost argument leans on. With 8 posts and ±26
+points you can't tell 60% from 90%. So I bumped it to n=80 and oversampled prose to 20 (seed
+20260801, 53 dev / 27 held-out):
 
-| Slice          |  n | ± at 80% | Verdict        |
-| -------------- | -: | -------: | -------------- |
-| format: pipe   | 60 |      10% | usable         |
-| format: prose  | 20 |      17% | weak, large gaps only |
-| has salary     | 15 |      19% | weak, large gaps only |
-| length: long   | 29 |      14% | usable         |
-| length: short  | 51 |      11% | usable         |
+| Slice          |  n | ± at 80% | Verdict               |
+| -------------- | -: | -------: | --------------------- |
+| format: pipe   | 60 |      10% | usable                |
+| format: prose  | 20 |      17% | weak, big gaps only   |
+| has salary     | 15 |      19% | weak, big gaps only   |
+| length: long   | 29 |      14% | usable                |
+| length: short  | 51 |      11% | usable                |
 
-The oversampled draw is not proportional to the corpus any more, so the overall number will be a
-weighted estimate, not a plain mean. Salary stays weak. I'd rather report it that way than widen
-the sample again.
+Since the sample isn't proportional anymore, the headline number has to be a weighted estimate,
+not a straight mean. Per-slice numbers are fine as is. Salary is still weak and I'm leaving it
+that way. I'd rather say "weak" out loud than keep growing the sample.
 
-**DuckDB vs Spark on the `/api/trends` query.** Median of three runs on one laptop,
-`local[*]` Spark, same Parquet, corpus replicated up to 100M rows (`bench/`, `docs/scaling.md`):
+**DuckDB vs Spark on the `/api/trends` query.** I kept hearing "just use Spark", so I measured
+it. Same Parquet on both, corpus copied up to 100M rows, `local[*]` Spark, median of three runs
+on my laptop (`bench/`, `docs/scaling.md`):
 
 | Rows        | DuckDB   | Spark (warm) | Spark / DuckDB |
 | ----------- | -------: | -----------: | -------------: |
@@ -65,10 +74,11 @@ the sample again.
 | 1,995,000   |  18.3 ms |     165.2 ms |           9.0x |
 | 99,750,000  | 338.6 ms |   1,081.9 ms |           3.2x |
 
-Spark adds 2.1 s of session startup on top. The gap narrows as rows grow but never crosses, so
-the thing that would flip this is the working set outgrowing one machine, not row count.
+On top of that, Spark takes 2.1s just to start a session. The gap shrinks as the data grows but
+DuckDB wins at every size I tried. What would actually flip it is the data no longer fitting on
+one box. Row count alone doesn't.
 
-## Layout
+## What's where
 
 | Path         | What's in it                                                          |
 | ------------ | --------------------------------------------------------------------- |
@@ -80,7 +90,7 @@ the thing that would flip this is the working set outgrowing one machine, not ro
 | `docs/`      | `formats.md`, the format taxonomy the schema comes from               |
 | `data/`      | gitignored, rebuildable from the public API                          |
 
-## Three loops, one of which a user waits on
+## Three loops, and only one of them has a user waiting
 
 ```
 INGEST — monthly, offline
@@ -103,11 +113,12 @@ EVAL — offline, on demand and in CI
    labeled.jsonl ──► run.py ──► scorers ──► runs.jsonl ──► /evals page
 ```
 
-Counting, ranking and aggregating are SQL and Python. The model reads the resume and writes the
-closing summary. That's all it does. Ask a model to count how many jobs want Terraform and it
-makes up a number that looks right, so nothing in the request path lets it.
+SQL and Python handle all the counting, ranking and aggregating. The model reads your resume and
+writes the closing summary, and that's all it gets to do. Ask an LLM how many jobs want
+Terraform and it'll confidently hand you a number that looks right and isn't, so nothing in the
+request path lets it.
 
-## Setup
+## Running it
 
 ```sh
 uv sync                  # curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -121,4 +132,4 @@ uv run ingest/rules_poc.py -n 20    # crude regex pass, coverage only
 uv run evals/score_poc.py           # scores rules against evals/poc_labels.jsonl
 ```
 
-Corpus on disk: 6 threads, Feb–Jul 2026, 1,995 postings.
+What's on disk right now: 6 threads, Feb to Jul 2026, 1,995 postings.
