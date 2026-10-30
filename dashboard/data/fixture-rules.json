@@ -1,0 +1,25 @@
+{
+  "source": "tests/fixtures/sample_thread.json",
+  "post_id": "48915735",
+  "generated_by": "dashboard/scripts/gen_fixture_rules.py (ingest.rules.parse)",
+  "extraction": {
+    "company": "Portless",
+    "role_titles": [
+      "AI Engineer"
+    ],
+    "location": "North America",
+    "remote": "remote",
+    "salary_min": 180000,
+    "salary_max": 230000,
+    "salary_currency": "USD",
+    "salary_period": "year",
+    "skills": [
+      "llm",
+      "python",
+      "rag",
+      "typescript"
+    ],
+    "seniority": null,
+    "visa_sponsor": null
+  }
+}

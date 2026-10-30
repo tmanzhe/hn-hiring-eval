@@ -1,6 +1,5 @@
-import { execFile } from "node:child_process";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { promisify } from "node:util";
 import { readBaselineRuns, readFixtureThread, readHistory, readPipelineLabels, readRungs } from "./data";
 import { FIELD_INFO, formatCount, formatDate } from "./content";
 import { HISTORY_FIELDS, type HistoryRow } from "./parsers";
@@ -26,31 +25,20 @@ export type PipelineStep = {
   };
 };
 
-// Optional offline enrichment: execute the actual rules, never a TS approximation.
-// Without Python/pydantic, show only committed evidence and an explicit absence note.
+// Rules output for the fixture example, committed as JSON (no Python at build time).
+// Regenerate with: uv run python dashboard/scripts/gen_fixture_rules.py
 async function rulesForExample(id: string) {
-  const root = path.resolve(process.cwd(), "..");
-  const script = `import json, sys
-from pathlib import Path
-from ingest.corpus import to_text
-from ingest.rules import parse
-thread = json.loads(Path('tests/fixtures/sample_thread.json').read_text())
-post = next(p for p in thread['comments'] if p['objectID'] == sys.argv[1])
-extraction, _ = parse(to_text(post['comment_text']))
-print(json.dumps(extraction.model_dump()))`;
-  for (const python of [path.join(root, ".venv/bin/python"), "python3"]) {
-    try {
-      const { stdout } = await promisify(execFile)(python, ["-B", "-c", script, id], {
-        cwd: root, timeout: 10_000, maxBuffer: 64 * 1024,
-      });
-      const result: unknown = JSON.parse(stdout);
-      if (result && typeof result === "object" && !Array.isArray(result) &&
-          HISTORY_FIELDS.every((field) => field in result)) {
-        return result as Record<string, unknown>;
-      }
-    } catch { /* Python is optional; never invent a prediction when unavailable. */ }
+  try {
+    const file = path.resolve(process.cwd(), "data/fixture-rules.json");
+    const data: unknown = JSON.parse(await readFile(file, "utf8"));
+    if (!data || typeof data !== "object") return null;
+    const { post_id, extraction } = data as { post_id?: unknown; extraction?: unknown };
+    if (post_id !== id || !extraction || typeof extraction !== "object" || Array.isArray(extraction)) return null;
+    if (!HISTORY_FIELDS.every((field) => field in extraction)) return null;
+    return extraction as Record<string, unknown>;
+  } catch {
+    return null; // Missing file: never invent a prediction.
   }
-  return null;
 }
 
 export async function readPipeline(): Promise<PipelineStep[]> {
@@ -134,7 +122,7 @@ export async function readPipeline(): Promise<PipelineStep[]> {
       table: history ? { caption: "Posts with a non-null rules value", columns: ["Field", "Posts"],
         rows: HISTORY_FIELDS.map((field) => [FIELD_INFO[field].label, show(counts[field])]) } : undefined,
       example: { ...example, note: rules
-        ? "Computed at build time by ingest.rules.parse on this committed fixture, before normalization; this is not an LLM prediction."
+        ? "Output of ingest.rules.parse on this committed fixture (dashboard/data/fixture-rules.json), before normalization; this is not an LLM prediction."
         : `${noRules} ${post ? "Only the committed source is shown." : "No real source example is available."}`,
         content: rulesContent ?? post?.html ?? null },
     },
