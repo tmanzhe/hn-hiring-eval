@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { parseDisagreements, parseHistory, parseRungs } from "./parsers.ts";
+import { parseBaselineRuns, parseDisagreements, parseFixtureThread, parseHistory, parsePipelineLabels, parseRungs } from "./parsers.ts";
 
 export const COMMANDS = {
   history: "uv run ingest/rules_history.py --thread 48747976 --history data/rules_history.jsonl",
@@ -20,3 +20,6 @@ async function read<T>(file: string, parse: (text: string) => T): Promise<T | nu
 export const readHistory = () => read("data/rules_history.jsonl", parseHistory);
 export const readRungs = () => read("evals/cost-quality.json", parseRungs);
 export const readDisagreements = () => read("evals/disagreements.md", parseDisagreements);
+export const readPipelineLabels = () => read("evals/labeled.jsonl", parsePipelineLabels);
+export const readFixtureThread = () => read("tests/fixtures/sample_thread.json", parseFixtureThread);
+export const readBaselineRuns = () => read("evals/runs.jsonl", parseBaselineRuns);

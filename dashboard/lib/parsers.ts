@@ -36,6 +36,61 @@ export type Disagreement = {
   model: string;
 };
 
+export type PipelineLabel = {
+  comment_id: string;
+  split: string;
+  fields: Record<string, unknown>;
+};
+export type FixtureThread = {
+  thread_id: string;
+  title: string;
+  comments: { id: string; html: string }[];
+};
+export type BaselineRun = {
+  config: string;
+  split: string;
+  n: number;
+  ts: string;
+  location: Record<string, number>;
+};
+
+export function parsePipelineLabels(text: string): PipelineLabel[] {
+  return text.split(/\r?\n/).filter((line) => line.trim()).flatMap((line) => {
+    const row = object(JSON.parse(line));
+    // Match evals/run.py: only completed labels enter evaluation.
+    if (row.done !== true) return [];
+    return [{ comment_id: string(row.comment_id), split: string(row.split ?? "dev"),
+      fields: Object.fromEntries(HISTORY_FIELDS.filter((field) => field in row)
+        .map((field) => [field, row[field]])) }];
+  });
+}
+
+export function parseFixtureThread(text: string): FixtureThread {
+  const row = object(JSON.parse(text));
+  if (!Array.isArray(row.comments)) throw new Error("Expected fixture comments");
+  return { thread_id: string(row.thread_id), title: string(row.title),
+    comments: row.comments.map((value) => {
+      const comment = object(value);
+      return { id: string(comment.objectID), html: string(comment.comment_text) };
+    }) };
+}
+
+export function parseBaselineRuns(text: string): BaselineRun[] {
+  return text.split(/\r?\n/).filter((line) => line.trim()).flatMap((line) => {
+    const row = object(JSON.parse(line));
+    if (typeof row.config !== "string" || !row.config.startsWith("rules")) return [];
+    // Rules runs have no LLM cost block; validate their own committed schema.
+    const n = count(row.n);
+    const score = object(object(row.scores).location);
+    const location = Object.fromEntries(Object.entries(object(score.outcomes))
+      .map(([key, value]) => [key, count(value)]));
+    if (count(score.n) !== n || Object.values(location).reduce((sum, value) => sum + value, 0) !== n) {
+      throw new Error("Outcome counts do not match n");
+    }
+    return [{ config: row.config, split: string(row.split), n, ts: string(row.ts), location }];
+  }).sort((a, b) => a.ts.localeCompare(b.ts));
+}
+
 function object(value: unknown): Record<string, unknown> {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("Expected an object");
