@@ -1,4 +1,4 @@
-"""Run B, C, D, E and W on the same labels and write a Markdown quality/cost table."""
+"""Run B, C, D, E, W and F (rules + missing-field fallback) on the same labels."""
 
 import argparse
 import html
@@ -18,6 +18,13 @@ from evals.scorers import Outcome, score_set_pair
 from ingest.corpus import by_id, to_text
 from ingest.normalize import normalize
 
+LADDER_CONFIGS = ('B', 'C', 'D', 'E', 'W', 'F')
+
+
+def cost_complete(config, responses, missing, errors):
+    """F can legitimately skip every model call when rules fill both target fields."""
+    return not errors and not missing and (responses > 0 or config == 'F')
+
 
 def build_disagreement_report(runs):
     """Build Markdown from (config, split, pairs) runs, using already-normalized predictions.
@@ -26,7 +33,7 @@ def build_disagreement_report(runs):
     so rounding macro-F1 for display cannot hide a partial mismatch.
     """
     fields = ('company', 'salary', 'location', 'skills', 'remote', 'seniority')
-    configs = ('B', 'C', 'D', 'E', 'W')
+    configs = LADDER_CONFIGS
     grouped = {field: {config: [] for config in configs} for field in fields}
 
     def cell(value):
@@ -129,6 +136,7 @@ def main():
 
     from agent.extract_agent import extract as agent_extract
     from agent.workflow import extract as workflow_extract
+    from ingest.fallback import extract as fallback_extract
 
     class Usage(BaseCallbackHandler):
         def __init__(self):
@@ -180,7 +188,7 @@ def main():
 
     rows = []
     disagreement_runs = []
-    for config in ('B', 'C', 'D', 'E', 'W'):
+    for config in LADDER_CONFIGS:
         for split, (labels, posts, label_source) in datasets.items():
             usage = Usage()
             # Disable SDK retries: a retry can hide a billed response whose usage was lost.
@@ -192,17 +200,20 @@ def main():
                 text = to_text(post.get('comment_text'))
                 if config == 'W':
                     prediction, trace = workflow_extract(text, model=model, chat_model=chat)
+                elif config == 'F':
+                    prediction, trace = fallback_extract(text, model=model, chat_model=chat)
                 else:
                     result = agent_extract(text, config, model=model, chat_model=chat)
                     prediction, trace = result.extraction, result.trajectory
                 latencies.append((time.perf_counter() - started) * 1000)
-                if usage.responses == previous_responses:
+                if (usage.responses == previous_responses
+                        and (config != 'F' or trace.model_calls > 0)):
                     usage.missing = True
                 pairs.append((normalize(prediction), label))
                 if trace.error:
                     errors.append({'comment_id': label['comment_id'], 'error': trace.error})
             # Failed calls can be billed without returning usage. Never label that cost complete.
-            complete = not errors and not usage.missing and usage.responses > 0
+            complete = cost_complete(config, usage.responses, usage.missing, errors)
             row = dict(config=config, split=split, model=model, labels_from=label_source,
                        ts=datetime.now(UTC).isoformat(),
                        comment_ids=[label['comment_id'] for label in labels], n=len(labels),
@@ -220,7 +231,7 @@ def main():
     lines = ['# LLM cost vs quality', '', f'Model: {model}. Pricing source: {source}.', '',
              'Unweighted labeled-set scores; parentheses contain 95% Wilson intervals. '
              'Skills macro-F1 has no Wilson interval. Costs are USD.', '']
-    for config in ('B', 'C', 'D', 'E', 'W'):
+    for config in LADDER_CONFIGS:
         selected = [r for r in rows if r['config'] == config]
         lines += [f'## Config {config}', '']
         headers = [f"{r['split'].capitalize()} (n={r['n']})" for r in selected]
