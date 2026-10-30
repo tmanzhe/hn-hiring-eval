@@ -112,7 +112,7 @@ def test_main_fetches_top_level_pages_and_runs_real_rules_offline(tmp_path, monk
     rows = read_rows(path)
     assert rows[0] == prior
     assert rows[1] == {
-        "date": datetime.now(UTC).date().isoformat(),
+        "date": rules_history.run_date(),
         "thread_id": "123",
         "total_posts": 2,
         **{field: 1 for field in rules_history.FIELDS},
@@ -120,3 +120,10 @@ def test_main_fetches_top_level_pages_and_runs_real_rules_offline(tmp_path, monk
         "skills": 2,
     }
     assert capsys.readouterr().out == rules_history.trend_table(rows) + "\n"
+
+
+def test_run_date_after_8pm_toronto_stays_on_toronto_date():
+    # 2026-10-30 01:30 UTC == 2026-10-29 21:30 EDT
+    assert rules_history.run_date(datetime(2026, 10, 30, 1, 30, tzinfo=UTC)) == "2026-10-29"
+    # winter (EST, UTC-5): 2026-12-02 04:59 UTC == 2026-12-01 23:59
+    assert rules_history.run_date(datetime(2026, 12, 2, 4, 59, tzinfo=UTC)) == "2026-12-01"

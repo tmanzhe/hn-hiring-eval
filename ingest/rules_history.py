@@ -1,16 +1,25 @@
-"""Track rules-only non-null extraction counts by UTC run date and HN thread ID."""
+"""Track rules-only non-null extraction counts by America/Toronto run date and HN thread ID."""
 
 import argparse
 import json
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from ingest import fetch, rules
 from ingest.corpus import to_text
 from ingest.schema import Extraction
+
+TORONTO = ZoneInfo("America/Toronto")
+
+
+def run_date(now=None):
+    """Return the America/Toronto local date for a run (default: now)."""
+    now = now or datetime.now(UTC)
+    return now.astimezone(TORONTO).date().isoformat()
 
 FIELDS = tuple(Extraction.model_fields)
 DEFAULT_HISTORY = Path(__file__).resolve().parent.parent / "data" / "rules_history.jsonl"
@@ -61,10 +70,10 @@ def main(argv=None):
     parser.add_argument("--thread", required=True, type=int, help="HN hiring thread ID")
     parser.add_argument("--history", type=Path, default=DEFAULT_HISTORY, help="JSONL history path")
     args = parser.parse_args(argv)
-    run_date = datetime.now(UTC).date().isoformat()
+    date = run_date()
     with fetch.client() as client:
         counts = count_extractions(fetch.comments(client, args.thread))
-    row = {"date": run_date, "thread_id": str(args.thread), **counts}
+    row = {"date": date, "thread_id": str(args.thread), **counts}
     print(trend_table(update_history(args.history, row)))
 
 
