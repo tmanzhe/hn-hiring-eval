@@ -172,3 +172,54 @@ uv run evals/score_poc.py           # scores rules against evals/poc_labels.json
 ```
 
 What's on disk right now: 6 threads, Feb to Jul 2026, 1,995 postings.
+
+## Run the LLM cost vs quality ladder
+
+Copy `.env.example` to `.env`, set `ANTHROPIC_API_KEY` and an available, pinned
+`STRONG_MODEL`, and fill the four `LLM_*_USD_PER_MTOK` rates from that model's provider
+pricing page. Set `LLM_PRICE_SOURCE` to the pricing reference used. The example model name
+is not checked for availability by the runner. Prices are required inputs, not hardcoded
+or fetched automatically. `--env-file .env` loads these values into the environment.
+
+Run B, C, D, E and W over both complete splits:
+
+```sh
+uv run --env-file .env --extra agent evals/ladder.py --split all
+```
+
+Held-out only, or a cheap smoke run on two dev posts **per config**:
+
+```sh
+uv run --env-file .env --extra agent evals/ladder.py --split held-out
+uv run --env-file .env --extra agent evals/ladder.py --split dev --limit 2
+```
+
+`--split dev` is the default; `--split all` keeps dev and held-out scores separate.
+`--limit N` takes the first N completed labels in each selected split, in file order,
+using the same posts for every config. It is a smoke sample, not a quality estimate.
+The runner uses the existing label loader (`labeled.jsonl`, falling back to
+`poc_labels.jsonl`) and needs those posts already present in `data/raw/`.
+
+The command writes `evals/cost-quality.md` and `evals/cost-quality.json`, replacing
+previous output. Use `--output PATH.md` (a `.md` suffix is required) to preserve separate runs.
+Each config has the same field rows, precision/95% Wilson notation, skills macro-F1,
+enum accuracy, and
+last-split hallucination column as the rules-baseline table above, plus total cost and
+p50/p95 latency. JSON retains all existing scorer outputs, coverage, token counts,
+label IDs, pricing inputs, and errors. Scores are unweighted over the selected labels,
+matching the baseline's scoring convention; they are not population estimates.
+
+Cost is the sum of reported uncached input, output, cache-read, and cache-write tokens
+times their respective supplied USD-per-million rates, divided by one million. LangChain
+input totals include cached tokens, which are subtracted before pricing uncached input.
+The injected metered model bypasses the agent's prompt-caching middleware, so this ladder
+measures calls without explicitly requested prompt caching, unlike the standalone agent.
+Cache rates still apply if the provider reports cache usage; use the cache-write rate
+applicable to its TTL. SDK retries are disabled so a retry cannot hide unknown billable usage.
+Calls are synchronous; `USE_BATCH_API` does not apply. All model calls, including W's
+revision, contribute usage. Latency measures wall time per post including orchestration;
+p95 uses the nearest-rank percentile. Failed extractions are scored as empty predictions
+by the existing extractors. Failed calls or invalid/missing usage mark cost incomplete and
+produce a nonzero exit after writing results; JSON records `usage_missing` and the number
+of model responses, since billable usage may be unknown. Costs exclude taxes, discounts,
+and any charges not represented in token usage.
