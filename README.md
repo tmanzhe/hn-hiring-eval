@@ -12,7 +12,8 @@ The whole pipeline runs end to end. It pulls 1,995 postings across six monthly t
 rules parser over them, normalizes, and writes Parquet. A FastAPI service reads that Parquet
 through embedded DuckDB. On the eval side there are scorers for every field, a stratified
 sampler, and a labeling tool that deliberately hides the parser's output from whoever's
-labeling. The configs go from A (rules only) up to E, plus a W rung for the agent workflow.
+labeling. The configs go from A (rules only) up to E, plus W for the agent workflow and F
+for rules with a missing-field LLM fallback.
 `uv run agent/demo.py` runs the real agent graph against a scripted model, so you can poke at it
 without an API key. 288 tests, CI is green.
 
@@ -181,11 +182,22 @@ pricing page. Set `LLM_PRICE_SOURCE` to the pricing reference used. The example 
 is not checked for availability by the runner. Prices are required inputs, not hardcoded
 or fetched automatically. `--env-file .env` loads these values into the environment.
 
-Run B, C, D, E and W over both complete splits:
+Run B, C, D, E, W and F over both complete splits:
 
 ```sh
 uv run --env-file .env --extra agent evals/ladder.py --split all
 ```
+
+**F: rules + missing-field fallback** runs the unchanged rules parser first. Only if company
+and/or location is null does it make one LLM call, requesting just the missing fields. This
+targets prose posts without pipe headers and also fills missing fields in partial headers.
+All non-null rules values and all other fields are preserved. The model is instructed to
+abstain with null unless confident, use only the post, and copy source text without guessing
+or expanding abbreviations. Returned values must match a complete source span after case,
+Unicode and whitespace normalization; unsupported values become null. This conservative
+check may reject valid paraphrases. Model failures retain the rules result and record an error.
+F uses the same client, model, pricing, latency accounting and scorers as the other rungs;
+posts handled entirely by rules make no model call and contribute zero tokens/cost.
 
 Held-out only, or a cheap smoke run on two dev posts **per config**:
 
@@ -209,7 +221,7 @@ uv run --env-file .env --extra agent evals/ladder.py --split all --disagreements
 The flag writes `evals/disagreements.md` by default; `--disagreements PATH` chooses another
 file. Omitting the flag writes no disagreement report. The report starts with per-field,
 per-config counts across the selected splits, then lists every disagreement grouped by
-field and config (B, C, D, E, W), including split, post/label ID, label value, and model value.
+field and config (B, C, D, E, W, F), including split, post/label ID, label value, and model value.
 It covers the six scored fields and reuses the existing scoring matches and normalization:
 nullable extracted/abstained outcomes agree, skills require normalized per-post F1 of 1,
 and enums require exact agreement. Label salaries retain their recorded period; model
@@ -233,10 +245,11 @@ The injected metered model bypasses the agent's prompt-caching middleware, so th
 measures calls without explicitly requested prompt caching, unlike the standalone agent.
 Cache rates still apply if the provider reports cache usage; use the cache-write rate
 applicable to its TTL. SDK retries are disabled so a retry cannot hide unknown billable usage.
-Calls are synchronous; `USE_BATCH_API` does not apply. All model calls, including W's
-revision, contribute usage. Latency measures wall time per post including orchestration;
-p95 uses the nearest-rank percentile. Failed extractions are scored as empty predictions
-by the existing extractors. Failed calls or invalid/missing usage mark cost incomplete and
+Calls are synchronous; `USE_BATCH_API` does not apply. All model calls, including F's
+conditional fallback and W's revision, contribute usage. Latency measures wall time per post
+including orchestration; p95 uses the nearest-rank percentile. Failed B–E/W extractions are
+scored as empty predictions; F keeps its rules output. Failed calls or invalid/missing usage
+mark cost incomplete and
 produce a nonzero exit after writing results; JSON records `usage_missing` and the number
 of model responses, since billable usage may be unknown. Costs exclude taxes, discounts,
 and any charges not represented in token usage.
