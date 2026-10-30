@@ -1,5 +1,7 @@
 # hn-hiring-eval
 
+Turns Hacker News "Who is hiring?" posts into structured rows (company, salary, location, skills, remote, seniority) and measures how rules-based and LLM extraction compare on accuracy, cost and hallucination. Headline from the Haiku ladder (dev split, N=51): the LLM rungs lift company precision to 88–98% and skills F1 up to 0.80, versus 89% and 0.72 for the rules baseline (N=53), but location precision stays at 54–74%, below the fixed rules parser's 82%, at $0.003–$0.13 per 51-post run. Small sample, wide confidence intervals; details in [evals/cost-quality.md](evals/cost-quality.md).
+
 Scrapes HN "Who is hiring" threads and turns each posting into a structured row.
 
 Honestly the extractor is the boring part. I built it so I'd have something real to point an
