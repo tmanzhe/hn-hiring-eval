@@ -31,7 +31,7 @@ export default function AboutPage() {
         </article>
         <article className="card p-6 sm:p-8">
           <h2 className="text-xl font-semibold text-slate-950">What is implemented</h2>
-          <p className="mt-3 text-sm leading-7 text-slate-600">The repository includes rules extraction, normalization, field scorers and the B, C, D, E, W and F evaluation rungs. The LLM ladder has not been run on real data; no accuracy, cost or latency result for those rungs is claimed here.</p>
+          <p className="mt-3 text-sm leading-7 text-slate-600">The repository includes rules extraction, normalization, field scorers and the B, C, D, E, W and F evaluation rungs. The committed ladder results cover all six rungs using Haiku (claude-haiku-5-5), dev split, N=51 posts. The rules (baseline) dev evaluation is separate: N=53, run 2026-09-22.</p>
           <p className="mt-3 text-sm leading-7 text-slate-600">These dashboard pages read local reports at build time. They do not start an extraction or model run. Missing or unreadable reports show an empty state; new reports appear after a rebuild.</p>
         </article>
       </section>
