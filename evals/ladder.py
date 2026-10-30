@@ -107,6 +107,9 @@ def main():
                     help='single rung or comma-separated rungs (default: all)')
     ap.add_argument('--split', choices=['dev', 'held-out', 'all'], default='dev')
     ap.add_argument('--limit', type=int, help='first N labeled posts per selected split')
+    ap.add_argument('--skip-missing', action='store_true',
+                    help='skip labeled posts no longer in data/raw (e.g. deleted on HN); '
+                         'skipped ids are printed and recorded in the JSON output')
     ap.add_argument('--output', type=Path, default=Path('evals/cost-quality.md'))
     ap.add_argument('--disagreements', nargs='?', type=Path,
                     const=Path('evals/disagreements.md'), metavar='PATH',
@@ -191,12 +194,23 @@ def main():
 
     splits = ['dev', 'held-out'] if args.split == 'all' else [args.split]
     datasets = {}
+    skipped_missing = {}
     for split in splits:
         labels, label_source = load_labels(split)
         if args.limit:
             labels = labels[:args.limit]
+        skipped = []
+        if args.skip_missing:
+            from ingest.corpus import posts as all_posts
+            known = {c['objectID'] for c in all_posts()}
+            skipped = [label['comment_id'] for label in labels if label['comment_id'] not in known]
+            labels = [label for label in labels if label['comment_id'] in known]
+            if skipped:
+                print(f'{split}: skipping {len(skipped)} labeled posts not in data/raw: '
+                      + ', '.join(skipped), flush=True)
         posts = by_id([label['comment_id'] for label in labels])
         datasets[split] = (labels, posts, label_source)
+        skipped_missing[split] = skipped
 
     rows = []
     disagreement_runs = []
@@ -229,6 +243,7 @@ def main():
             row = dict(config=config, split=split, model=model, labels_from=label_source,
                        ts=datetime.now(UTC).isoformat(),
                        comment_ids=[label['comment_id'] for label in labels], n=len(labels),
+                       skipped_missing=skipped_missing[split],
                        scores=score_rows(pairs), tokens=usage.tokens, rates_usd_per_mtok=rates,
                        price_source=source, cost_complete=complete, errors=errors,
                        usage_missing=usage.missing, model_responses=usage.responses,

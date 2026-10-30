@@ -173,3 +173,11 @@ def test_rules_only_fallback_has_complete_zero_cost_but_missing_usage_still_fail
     assert not cost_complete('F', responses=0, missing=False, errors=['failed call'])
     for config in ('B', 'C', 'D', 'E', 'W'):
         assert not cost_complete(config, responses=0, missing=False, errors=[])
+
+
+def test_skip_missing_flag_is_registered():
+    import subprocess
+    import sys
+    out = subprocess.run([sys.executable, 'evals/ladder.py', '--help'],
+                         capture_output=True, text=True, check=True).stdout
+    assert '--skip-missing' in out
