@@ -16,7 +16,7 @@ export default async function OverviewPage() {
         <Link href="/rungs" className="text-link text-sm">Evaluation ladder <span aria-hidden="true">↗</span></Link>
       </section>
       <PipelineGraph steps={steps} />
-      <p className="text-xs leading-6 text-slate-500">Built from committed local data. Rules counts describe coverage; the LLM ladder has not been run. <Link href="/about" className="text-link">Methodology ↗</Link></p>
+      <p className="text-xs leading-6 text-slate-500">Built from committed local data. Rules counts describe coverage; the committed Haiku ladder results describe correctness, cost and latency on 51 dev posts. <Link href="/about" className="text-link">Methodology ↗</Link></p>
     </div>
   );
 }

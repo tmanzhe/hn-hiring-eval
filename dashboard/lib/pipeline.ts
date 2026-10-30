@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { readBaselineRuns, readFixtureThread, readHistory, readPipelineLabels, readRungs } from "./data";
-import { FIELD_INFO, formatCount, formatDate } from "./content";
+import { FIELD_INFO, formatCount, formatDate, ladderLabel, percent, torontoTime } from "./content";
 import { HISTORY_FIELDS, type HistoryRow } from "./parsers";
 
 export type PipelineStep = {
@@ -62,20 +62,45 @@ export async function readPipeline(): Promise<PipelineStep[]> {
   };
   const show = formatCount;
   const missing = "Not generated yet. No readable local report is available.";
-  const notRun = "The LLM ladder has not been run on real data.";
   const historyNote = history
     ? `Latest snapshot per thread · ${latest ? formatDate(latest.date) : ""}. Reruns are not added together.`
     : missing;
-  const latestBaselines = new Map<string, NonNullable<typeof baselines>[number]>();
-  baselines?.forEach((run) => latestBaselines.set(run.split, run));
+  const baseline = baselines?.find((run) => run.config === "rules (baseline)" && run.split === "dev");
+  const f = rungs?.filter((row) => row.config === "F" && row.split === "dev");
+  const fRun = f?.[0];
+  const runLabel = ladderLabel(rungs ?? []);
   const outcomes = ["extracted", "abstained", "missed", "hallucinated", "wrong"];
-  const baselineTable = latestBaselines.size ? {
-    caption: "Existing rules evaluations · location only · latest record per split (not LLM results)",
-    columns: ["Split / rules config", ...outcomes],
-    rows: [...latestBaselines.values()].map((run) => [
-      `${run.split} · ${run.config} · n=${run.n}`,
-      ...outcomes.map((outcome) => show(run.location[outcome] ?? 0)),
+  const precisionText = (row: NonNullable<typeof rungs>[number]) => row.precision === null ? "—"
+    : `${percent(row.precision)}${row.precision_ci95 ? ` (${row.precision_ci95.map(percent).join("–")})` : ""}`;
+  const fScores = f?.filter((row) => ["company", "location"].includes(row.field));
+  const fTable = fScores?.length ? {
+    caption: "F · final field quality after rules and fallback · precision with Wilson 95% CI",
+    columns: ["Field", "Precision (95% CI)", "Hallucination rate"],
+    rows: fScores.map((row) => [row.field, precisionText(row), row.hallucination_rate === null ? "—" : percent(row.hallucination_rate)]),
+  } : undefined;
+  const scoreTable = rungs ? {
+    caption: "Ladder outcomes per rung and nullable field · absent outcome keys shown as —",
+    columns: ["Rung / field", ...outcomes],
+    rows: rungs.filter((row) => row.outcomes).map((row) => [
+      `${row.config} / ${row.field} · n=${row.n}`,
+      ...outcomes.map((key) => row.outcomes?.[key] === undefined ? "—" : show(row.outcomes[key])),
     ]),
+  } : undefined;
+  const comparisonRows = [...(baseline?.rows ?? []), ...(rungs ?? [])];
+  const methods = [...new Set(comparisonRows.map((row) => row.config))];
+  const comparisonTable = methods.length ? {
+    caption: "Per-rung comparison vs rules (baseline) · company, salary, location precision; remote and seniority accuracy; skills macro-F1",
+    columns: ["Method / N", "Company P", "Salary P", "Location P", "Skills F1", "Remote acc.", "Seniority acc.", "USD", "p50 / p95 ms"],
+    rows: methods.map((config) => {
+      const rows = comparisonRows.filter((row) => row.config === config);
+      const run = rows[0];
+      return [`${config} / ${run.n}`, ...["company", "salary", "location", "skills", "remote", "seniority"].map((field) => {
+        const row = rows.find((entry) => entry.field === field);
+        return !row ? "—" : field === "skills" ? row.macro_f1?.toFixed(3) ?? "—"
+          : percent((row.precision ?? row.accuracy)!);
+      }), run.cost_usd === null ? "Not recorded" : `$${run.cost_usd.toFixed(6)}${run.cost_complete ? "" : " (incomplete)"}`,
+      `${run.p50_ms?.toFixed(1) ?? "—"} / ${run.p95_ms?.toFixed(1) ?? "—"}`];
+    }),
   } : undefined;
   const rulesContent = rules ? JSON.stringify(rules, null, 2) : null;
   const noRules = "Rules output is not available in this build.";
@@ -127,53 +152,58 @@ export async function readPipeline(): Promise<PipelineStep[]> {
         content: rulesContent ?? post?.html ?? null },
     },
     {
-      id: "llm", title: "LLM fallback", symbol: "F", pending: true,
-      status: "Not run", summary: "Rung F · null fields only",
+      id: "llm", title: "LLM fallback", symbol: "F", pending: !fRun,
+      status: fRun ? "Measured · Haiku" : "No report",
+      summary: fRun ? `F · ${fRun.model_responses ?? "Unrecorded"} model responses` : "Rung F · null fields only",
       description: "Rung F asks an LLM only for null company or location fields and keeps every existing rules value.",
-      metrics: [], note: `${notRun} Model-call counts, cost and latency are not generated yet.`,
-      source: "ingest/fallback.py · evals/cost-quality.json (not generated yet)",
+      metrics: fRun ? [
+        { label: "Model responses (recorded calls)", value: String(fRun.model_responses ?? "Not recorded") },
+        { label: "Total USD", value: fRun.cost_usd?.toFixed(7) ?? "Not recorded" },
+        { label: "USD per post", value: fRun.cost_per_post?.toFixed(7) ?? "Not recorded" },
+        { label: "p50 latency (ms)", value: fRun.p50_ms?.toFixed(1) ?? "Not recorded" },
+        { label: "p95 latency (ms)", value: fRun.p95_ms?.toFixed(1) ?? "Not recorded" },
+      ] : [],
+      note: `${runLabel} F cost ${fRun?.cost_complete ? "complete" : "not complete"}.`,
+      source: "evals/cost-quality.json · evals/cost-quality.md", table: fTable,
       example: { ...example, note: rules
-        ? `${fieldTargets?.length ? `Null targets in this rules output: ${fieldTargets.join(", ")}.` : "Both target fields are already present in this rules output, so rung F would skip the model call."} This is a rules-only inspection; no LLM output exists for this post.`
-        : `${noRules} No real LLM example exists because the ladder has not been run.`,
+        ? `${fieldTargets?.length ? `Null targets in this rules output: ${fieldTargets.join(", ")}.` : "Both target fields are present in this rules output, so F would skip the model call."} No per-post LLM trace is committed for this fixture.`
+        : `${noRules} No per-post LLM trace is available for this fixture.`,
         content: rules ? JSON.stringify({ company: rules.company, location: rules.location }, null, 2) : null },
     },
     {
-      id: "span", title: "Span check", symbol: "“ ”", pending: true,
-      status: "Not run", summary: "Require source evidence",
+      id: "span", title: "Span check", symbol: "“ ”", pending: !fRun,
+      status: fRun ? "Evaluated within F" : "No report", summary: "Require source evidence",
       description: "The fallback accepts proposed company and location values only when they appear as source spans, allowing case, Unicode and whitespace normalization.",
-      metrics: [], note: `${notRun} Span-check acceptance and failure counts are not generated yet.`,
-      source: "ingest/fallback.py · _grounded",
-      example: { ...example, note: "No real span-check trace exists for this post: there is no LLM proposal to check, and existing rules values do not pass through this check.", content: null },
+      metrics: [],
+      note: `${runLabel} Span-check acceptance and failure counts are not recorded separately in the JSON. The table shows final F field quality, including retained rules values; it does not isolate span-check performance.`,
+      table: fTable, source: "ingest/fallback.py · _grounded · evals/cost-quality.json",
+      example: { ...example, note: "No per-post span-check trace is committed for this fixture. Existing rules values do not pass through this check.", content: null },
     },
     {
-      id: "score", title: "Score vs labels", symbol: "≟", pending: true,
-      status: "LLM not run", summary: labels ? `${show(labels.length)} completed labels ready` : "Labels not available",
+      id: "score", title: "Score vs labels", symbol: "≟", pending: !rungs,
+      status: rungs ? "Ladder scored" : "No report", summary: fRun ? `Dev · N=${fRun.n} posts per rung` : "Labels ready",
       description: "Scorers compare predictions with reference labels, separating extracted, abstained, missed, hallucinated and wrong values.",
-      metrics: labels ? [{ label: "Completed labels", value: show(labels.length) },
-        { label: "Dev labels", value: show(labels.filter((entry) => entry.split === "dev").length) },
-        { label: "Held-out labels", value: show(labels.filter((entry) => entry.split === "held-out").length) }] : [],
-      note: `${notRun} LLM scores are not generated yet. ${baselines?.length ? "The committed rules evaluations below are separate; each field is scored independently." : "No committed rules evaluation is available."}`,
-      source: "evals/labeled.jsonl · evals/runs.jsonl", table: baselineTable,
+      metrics: fRun ? [
+        { label: "Scored posts per rung", value: show(fRun.n) },
+        { label: "Deleted HN posts skipped", value: show(fRun.skipped_missing.length) },
+      ] : [],
+      note: `${runLabel} Skipped missing IDs: ${fRun?.skipped_missing.join(", ") ?? "Not recorded"}. Each field is scored independently. Outcome counts are shown only where recorded.`,
+      source: "evals/cost-quality.json · evals/labeled.jsonl", table: scoreTable,
       example: { ...example, note: label
-        ? "A reference label is committed for this post; no LLM prediction or scored LLM trace exists."
-        : "This fixture post has no matching label in evals/labeled.jsonl, so no real scored example exists for it; no outcome is assigned.",
+        ? "A reference label is committed for this fixture; a per-post scored LLM trace is not available here."
+        : "This fixture post has no matching label in evals/labeled.jsonl; no outcome is assigned.",
         content: label ? JSON.stringify(label.fields, null, 2) : null },
     },
     {
       id: "results", title: "Results", symbol: "↗", pending: !rungs,
-      status: rungs ? "Report available" : "Awaiting ladder",
-      summary: rungs ? "Local ladder report" : history || baselines?.length ? "Rules evidence available" : "Not generated yet",
-      description: "Results keep rules coverage separate from evaluation quality, model cost and per-post timing.",
-      metrics: [
-        ...(history ? [{ label: "Rules history snapshots", value: show(history.length) }] : []),
-        ...(baselines ? [{ label: "Committed rules evaluation records", value: show(baselines.length) }] : []),
-      ],
-      note: rungs ? "A local ladder report is available on the evaluation page."
-        : `${notRun} The comparison will appear after a ladder run; accuracy, cost and speed results for the LLM are not generated yet.`,
-      source: "data/rules_history.jsonl · evals/runs.jsonl · evals/cost-quality.json",
-      example: { ...example, note: rules
-        ? "No final evaluated LLM result exists for this post. Its rules-only extraction is the last available step in this build."
-        : "No final evaluated LLM result exists, and no rules output is available for this example in this build.",
+      status: rungs ? "Comparison available" : "No report",
+      summary: rungs ? "Six rungs vs rules (baseline)" : "Rules evidence available",
+      description: "Compare each rung with the committed rules baseline. Full field scores, Wilson intervals, hallucination rates and errors are on the evaluation page.",
+      metrics: [],
+      note: `${runLabel} ${baseline ? `Rules (baseline) is a separate dev evaluation: N=${baseline.n}, run ${torontoTime(baseline.ts)} America/Toronto. The sample sizes differ, so this is not a matched-sample comparison.` : "No committed rules baseline available."} C had 1 API timeout; W had 1 validation error. Their costs are incomplete.`,
+      table: comparisonTable,
+      source: "evals/cost-quality.json · evals/cost-quality.md · evals/runs.jsonl",
+      example: { ...example, note: "The fixture rules output below is separate from the aggregate ladder results. No final per-post LLM trace is committed for this fixture.",
         content: rulesContent },
     },
   ];
