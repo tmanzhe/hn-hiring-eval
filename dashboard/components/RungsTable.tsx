@@ -5,7 +5,7 @@ import type { RungRow } from "../lib/parsers";
 
 type Column = { key: keyof RungRow; label: string };
 const COLUMNS: Column[] = [
-  { key: "config", label: "Config" }, { key: "split", label: "Split" },
+  { key: "config", label: "Method" }, { key: "split", label: "Dataset split" },
   { key: "model", label: "Model" }, { key: "field", label: "Field" }, { key: "n", label: "n" },
   { key: "accuracy", label: "Accuracy" }, { key: "accuracy_ci95", label: "Accuracy Wilson 95% CI" },
   { key: "precision", label: "Precision" }, { key: "precision_ci95", label: "Precision Wilson 95% CI" },
@@ -44,9 +44,9 @@ export default function RungsTable({ rows }: { rows: RungRow[] }) {
     return sort.ascending ? comparison : -comparison;
   });
   return (
-    <div style={{ overflowX: "auto" }}>
+    <div className="table-scroll" role="region" aria-label="Ladder scores, scroll horizontally for all columns" tabIndex={0}>
       <table>
-        <caption>Field scores and run costs; CI columns sort by their lower bound.</caption>
+        <caption>Each row is one method, dataset split and field. Higher scores mean closer agreement with labels. Cost covers the whole method/split and repeats across fields; do not add these rows. Click headings to sort; uncertainty ranges sort by their lower bound. A dash means that metric does not apply.</caption>
         <thead><tr>{columns.map(({ key, label }) => (
           <th key={key} scope="col" aria-sort={sort.key === key ? (sort.ascending ? "ascending" : "descending") : "none"}>
             <button type="button" onClick={() => setSort({ key, ascending: sort.key === key ? !sort.ascending : true })}>
