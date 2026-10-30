@@ -1,0 +1,6 @@
+body { margin: 24px; font-family: sans-serif; }
+table { border-collapse: collapse; }
+th, td { border: 1px solid #aaa; padding: 6px; text-align: left; }
+caption { text-align: left; margin-bottom: 8px; }
+label { margin-right: 16px; }
+code { white-space: pre-wrap; overflow-wrap: anywhere; }
