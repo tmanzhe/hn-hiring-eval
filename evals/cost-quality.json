@@ -1,0 +1,1107 @@
+[
+  {
+    "config": "B",
+    "split": "dev",
+    "model": "claude-haiku-5-5",
+    "labels_from": "labeled.jsonl",
+    "ts": "2026-10-30T07:46:13.225373+00:00",
+    "comment_ids": [
+      "46858476",
+      "46858532",
+      "46859629",
+      "46859924",
+      "46863917",
+      "46869120",
+      "46870506",
+      "46875351",
+      "46888712",
+      "46893914",
+      "46959004",
+      "47220091",
+      "47220599",
+      "47220965",
+      "47220989",
+      "47223968",
+      "47225525",
+      "47229954",
+      "47232351",
+      "47241526",
+      "47255238",
+      "47256159",
+      "47308369",
+      "47603990",
+      "47605264",
+      "47605460",
+      "47609507",
+      "47610945",
+      "47614308",
+      "47632126",
+      "47673074",
+      "47676433",
+      "47975959",
+      "47976872",
+      "47979394",
+      "47980297",
+      "47986820",
+      "48021354",
+      "48023051",
+      "48102189",
+      "48358258",
+      "48362254",
+      "48365334",
+      "48376486",
+      "48749084",
+      "48749443",
+      "48752786",
+      "48787393",
+      "48794583",
+      "48804695",
+      "48819370"
+    ],
+    "n": 51,
+    "skipped_missing": [
+      "47625506",
+      "48747987"
+    ],
+    "scores": {
+      "company": {
+        "n": 51,
+        "coverage": 0.9608,
+        "precision": 0.9592,
+        "precision_ci95": [
+          0.8629,
+          0.9887
+        ],
+        "precision_margin": 0.0629,
+        "hallucination_rate": 0.0,
+        "outcomes": {
+          "abstained": 2,
+          "extracted": 47,
+          "wrong": 2
+        }
+      },
+      "salary": {
+        "n": 51,
+        "coverage": 0.1373,
+        "precision": 1.0,
+        "precision_ci95": [
+          0.6457,
+          1.0
+        ],
+        "precision_margin": 0.1772,
+        "hallucination_rate": 0.0,
+        "outcomes": {
+          "abstained": 44,
+          "extracted": 7
+        }
+      },
+      "location": {
+        "n": 51,
+        "coverage": 0.8039,
+        "precision": 0.6341,
+        "precision_ci95": [
+          0.4812,
+          0.7641
+        ],
+        "precision_margin": 0.1414,
+        "hallucination_rate": 0.0392,
+        "outcomes": {
+          "abstained": 10,
+          "extracted": 26,
+          "hallucinated": 2,
+          "wrong": 13
+        }
+      },
+      "skills": {
+        "n": 51,
+        "macro_f1": 0.7574,
+        "macro_precision": 0.7158,
+        "macro_recall": 0.8665
+      },
+      "remote": {
+        "n": 51,
+        "accuracy": 0.8824,
+        "per_class_recall": {
+          "None": 1.0,
+          "remote": 0.8214,
+          "hybrid": 0.875,
+          "onsite": 1.0
+        },
+        "confusion": {
+          "hybrid->hybrid": 7,
+          "hybrid->onsite": 1,
+          "onsite->onsite": 8,
+          "remote->hybrid": 4,
+          "remote->remote": 23,
+          "remote->None": 1,
+          "None->None": 7
+        }
+      },
+      "seniority": {
+        "n": 51,
+        "accuracy": 0.8824,
+        "per_class_recall": {
+          "None": 0.8611,
+          "senior": 1.0,
+          "staff+": 1.0,
+          "junior": 0.5
+        },
+        "confusion": {
+          "junior->junior": 1,
+          "junior->None": 1,
+          "senior->senior": 11,
+          "staff+->staff+": 2,
+          "None->senior": 4,
+          "None->staff+": 1,
+          "None->None": 31
+        }
+      }
+    },
+    "tokens": {
+      "input": 104568,
+      "output": 18919,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "rates_usd_per_mtok": {
+      "input": 0.1,
+      "output": 0.5,
+      "cache_read": 0.01,
+      "cache_write": 0.125
+    },
+    "price_source": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "cost_complete": true,
+    "errors": [],
+    "usage_missing": false,
+    "model_responses": 57,
+    "cost_usd": 0.0199163,
+    "p50_ms": 1931.4985789969796,
+    "p95_ms": 4215.298962997622
+  },
+  {
+    "config": "C",
+    "split": "dev",
+    "model": "claude-haiku-5-5",
+    "labels_from": "labeled.jsonl",
+    "ts": "2026-10-30T08:05:36.388234+00:00",
+    "comment_ids": [
+      "46858476",
+      "46858532",
+      "46859629",
+      "46859924",
+      "46863917",
+      "46869120",
+      "46870506",
+      "46875351",
+      "46888712",
+      "46893914",
+      "46959004",
+      "47220091",
+      "47220599",
+      "47220965",
+      "47220989",
+      "47223968",
+      "47225525",
+      "47229954",
+      "47232351",
+      "47241526",
+      "47255238",
+      "47256159",
+      "47308369",
+      "47603990",
+      "47605264",
+      "47605460",
+      "47609507",
+      "47610945",
+      "47614308",
+      "47632126",
+      "47673074",
+      "47676433",
+      "47975959",
+      "47976872",
+      "47979394",
+      "47980297",
+      "47986820",
+      "48021354",
+      "48023051",
+      "48102189",
+      "48358258",
+      "48362254",
+      "48365334",
+      "48376486",
+      "48749084",
+      "48749443",
+      "48752786",
+      "48787393",
+      "48794583",
+      "48804695",
+      "48819370"
+    ],
+    "n": 51,
+    "skipped_missing": [
+      "47625506",
+      "48747987"
+    ],
+    "scores": {
+      "company": {
+        "n": 51,
+        "coverage": 0.8824,
+        "precision": 0.9556,
+        "precision_ci95": [
+          0.8517,
+          0.9877
+        ],
+        "precision_margin": 0.068,
+        "hallucination_rate": 0.0,
+        "outcomes": {
+          "abstained": 2,
+          "extracted": 43,
+          "missed": 4,
+          "wrong": 2
+        }
+      },
+      "salary": {
+        "n": 51,
+        "coverage": 0.098,
+        "precision": 1.0,
+        "precision_ci95": [
+          0.5655,
+          1.0
+        ],
+        "precision_margin": 0.2172,
+        "hallucination_rate": 0.0,
+        "outcomes": {
+          "abstained": 44,
+          "extracted": 5,
+          "missed": 2
+        }
+      },
+      "location": {
+        "n": 51,
+        "coverage": 0.6863,
+        "precision": 0.6,
+        "precision_ci95": [
+          0.4357,
+          0.7445
+        ],
+        "precision_margin": 0.1544,
+        "hallucination_rate": 0.0392,
+        "outcomes": {
+          "abstained": 10,
+          "extracted": 21,
+          "hallucinated": 2,
+          "missed": 6,
+          "wrong": 12
+        }
+      },
+      "skills": {
+        "n": 51,
+        "macro_f1": 0.7454,
+        "macro_precision": 0.7678,
+        "macro_recall": 0.7694
+      },
+      "remote": {
+        "n": 51,
+        "accuracy": 0.8431,
+        "per_class_recall": {
+          "None": 1.0,
+          "remote": 0.7857,
+          "hybrid": 0.875,
+          "onsite": 0.875
+        },
+        "confusion": {
+          "hybrid->hybrid": 7,
+          "hybrid->None": 1,
+          "onsite->onsite": 7,
+          "onsite->None": 1,
+          "remote->hybrid": 3,
+          "remote->remote": 22,
+          "remote->None": 3,
+          "None->None": 7
+        }
+      },
+      "seniority": {
+        "n": 51,
+        "accuracy": 0.7451,
+        "per_class_recall": {
+          "None": 0.7778,
+          "senior": 0.6364,
+          "staff+": 0.5,
+          "junior": 1.0
+        },
+        "confusion": {
+          "junior->junior": 2,
+          "senior->senior": 7,
+          "senior->None": 4,
+          "staff+->senior": 1,
+          "staff+->staff+": 1,
+          "None->senior": 7,
+          "None->staff+": 1,
+          "None->None": 28
+        }
+      }
+    },
+    "tokens": {
+      "input": 554749,
+      "output": 64462,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "rates_usd_per_mtok": {
+      "input": 0.1,
+      "output": 0.5,
+      "cache_read": 0.01,
+      "cache_write": 0.125
+    },
+    "price_source": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "cost_complete": false,
+    "errors": [
+      {
+        "comment_id": "47976872",
+        "error": "APITimeoutError: Request timed out or interrupted. This could be due to a network timeout, dropped connection, or request cancellation. See https://docs.anthropic.com/en/api/errors#long-requests for more details."
+      }
+    ],
+    "usage_missing": true,
+    "model_responses": 158,
+    "cost_usd": 0.08770589999999999,
+    "p50_ms": 4909.30799600028,
+    "p95_ms": 21669.368024995492
+  },
+  {
+    "config": "D",
+    "split": "dev",
+    "model": "claude-haiku-5-5",
+    "labels_from": "labeled.jsonl",
+    "ts": "2026-10-30T08:10:12.877289+00:00",
+    "comment_ids": [
+      "46858476",
+      "46858532",
+      "46859629",
+      "46859924",
+      "46863917",
+      "46869120",
+      "46870506",
+      "46875351",
+      "46888712",
+      "46893914",
+      "46959004",
+      "47220091",
+      "47220599",
+      "47220965",
+      "47220989",
+      "47223968",
+      "47225525",
+      "47229954",
+      "47232351",
+      "47241526",
+      "47255238",
+      "47256159",
+      "47308369",
+      "47603990",
+      "47605264",
+      "47605460",
+      "47609507",
+      "47610945",
+      "47614308",
+      "47632126",
+      "47673074",
+      "47676433",
+      "47975959",
+      "47976872",
+      "47979394",
+      "47980297",
+      "47986820",
+      "48021354",
+      "48023051",
+      "48102189",
+      "48358258",
+      "48362254",
+      "48365334",
+      "48376486",
+      "48749084",
+      "48749443",
+      "48752786",
+      "48787393",
+      "48794583",
+      "48804695",
+      "48819370"
+    ],
+    "n": 51,
+    "skipped_missing": [
+      "47625506",
+      "48747987"
+    ],
+    "scores": {
+      "company": {
+        "n": 51,
+        "coverage": 0.902,
+        "precision": 0.9783,
+        "precision_ci95": [
+          0.8866,
+          0.9962
+        ],
+        "precision_margin": 0.0548,
+        "hallucination_rate": 0.0,
+        "outcomes": {
+          "abstained": 2,
+          "extracted": 45,
+          "missed": 3,
+          "wrong": 1
+        }
+      },
+      "salary": {
+        "n": 51,
+        "coverage": 0.1176,
+        "precision": 1.0,
+        "precision_ci95": [
+          0.6097,
+          1.0
+        ],
+        "precision_margin": 0.1952,
+        "hallucination_rate": 0.0,
+        "outcomes": {
+          "abstained": 44,
+          "extracted": 6,
+          "missed": 1
+        }
+      },
+      "location": {
+        "n": 51,
+        "coverage": 0.7255,
+        "precision": 0.5405,
+        "precision_ci95": [
+          0.3838,
+          0.6896
+        ],
+        "precision_margin": 0.1529,
+        "hallucination_rate": 0.0392,
+        "outcomes": {
+          "abstained": 10,
+          "extracted": 20,
+          "hallucinated": 2,
+          "missed": 4,
+          "wrong": 15
+        }
+      },
+      "skills": {
+        "n": 51,
+        "macro_f1": 0.7772,
+        "macro_precision": 0.8125,
+        "macro_recall": 0.7953
+      },
+      "remote": {
+        "n": 51,
+        "accuracy": 0.8235,
+        "per_class_recall": {
+          "None": 1.0,
+          "remote": 0.8214,
+          "hybrid": 0.875,
+          "onsite": 0.625
+        },
+        "confusion": {
+          "hybrid->hybrid": 7,
+          "hybrid->onsite": 1,
+          "onsite->onsite": 5,
+          "onsite->None": 3,
+          "remote->hybrid": 4,
+          "remote->remote": 23,
+          "remote->None": 1,
+          "None->None": 7
+        }
+      },
+      "seniority": {
+        "n": 51,
+        "accuracy": 0.8431,
+        "per_class_recall": {
+          "None": 0.8611,
+          "senior": 0.9091,
+          "staff+": 0.5,
+          "junior": 0.5
+        },
+        "confusion": {
+          "junior->junior": 1,
+          "junior->None": 1,
+          "senior->senior": 10,
+          "senior->None": 1,
+          "staff+->senior": 1,
+          "staff+->staff+": 1,
+          "None->senior": 4,
+          "None->staff+": 1,
+          "None->None": 31
+        }
+      }
+    },
+    "tokens": {
+      "input": 578266,
+      "output": 58309,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "rates_usd_per_mtok": {
+      "input": 0.1,
+      "output": 0.5,
+      "cache_read": 0.01,
+      "cache_write": 0.125
+    },
+    "price_source": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "cost_complete": true,
+    "errors": [],
+    "usage_missing": false,
+    "model_responses": 151,
+    "cost_usd": 0.0869811,
+    "p50_ms": 4525.363403001393,
+    "p95_ms": 12831.95055500255
+  },
+  {
+    "config": "E",
+    "split": "dev",
+    "model": "claude-haiku-5-5",
+    "labels_from": "labeled.jsonl",
+    "ts": "2026-10-30T08:16:18.360692+00:00",
+    "comment_ids": [
+      "46858476",
+      "46858532",
+      "46859629",
+      "46859924",
+      "46863917",
+      "46869120",
+      "46870506",
+      "46875351",
+      "46888712",
+      "46893914",
+      "46959004",
+      "47220091",
+      "47220599",
+      "47220965",
+      "47220989",
+      "47223968",
+      "47225525",
+      "47229954",
+      "47232351",
+      "47241526",
+      "47255238",
+      "47256159",
+      "47308369",
+      "47603990",
+      "47605264",
+      "47605460",
+      "47609507",
+      "47610945",
+      "47614308",
+      "47632126",
+      "47673074",
+      "47676433",
+      "47975959",
+      "47976872",
+      "47979394",
+      "47980297",
+      "47986820",
+      "48021354",
+      "48023051",
+      "48102189",
+      "48358258",
+      "48362254",
+      "48365334",
+      "48376486",
+      "48749084",
+      "48749443",
+      "48752786",
+      "48787393",
+      "48794583",
+      "48804695",
+      "48819370"
+    ],
+    "n": 51,
+    "skipped_missing": [
+      "47625506",
+      "48747987"
+    ],
+    "scores": {
+      "company": {
+        "n": 51,
+        "coverage": 0.8235,
+        "precision": 0.9524,
+        "precision_ci95": [
+          0.8421,
+          0.9868
+        ],
+        "precision_margin": 0.0724,
+        "hallucination_rate": 0.0,
+        "outcomes": {
+          "abstained": 2,
+          "extracted": 40,
+          "missed": 7,
+          "wrong": 2
+        }
+      },
+      "salary": {
+        "n": 51,
+        "coverage": 0.098,
+        "precision": 1.0,
+        "precision_ci95": [
+          0.5655,
+          1.0
+        ],
+        "precision_margin": 0.2172,
+        "hallucination_rate": 0.0,
+        "outcomes": {
+          "abstained": 44,
+          "extracted": 5,
+          "missed": 2
+        }
+      },
+      "location": {
+        "n": 51,
+        "coverage": 0.6863,
+        "precision": 0.7429,
+        "precision_ci95": [
+          0.5793,
+          0.8584
+        ],
+        "precision_margin": 0.1395,
+        "hallucination_rate": 0.0392,
+        "outcomes": {
+          "abstained": 10,
+          "extracted": 26,
+          "hallucinated": 2,
+          "missed": 6,
+          "wrong": 7
+        }
+      },
+      "skills": {
+        "n": 51,
+        "macro_f1": 0.7487,
+        "macro_precision": 0.8023,
+        "macro_recall": 0.7375
+      },
+      "remote": {
+        "n": 51,
+        "accuracy": 0.7255,
+        "per_class_recall": {
+          "None": 1.0,
+          "remote": 0.6429,
+          "hybrid": 0.75,
+          "onsite": 0.75
+        },
+        "confusion": {
+          "hybrid->hybrid": 6,
+          "hybrid->None": 2,
+          "onsite->onsite": 6,
+          "onsite->None": 2,
+          "remote->hybrid": 7,
+          "remote->remote": 18,
+          "remote->None": 3,
+          "None->None": 7
+        }
+      },
+      "seniority": {
+        "n": 51,
+        "accuracy": 0.8235,
+        "per_class_recall": {
+          "None": 0.9167,
+          "senior": 0.7273,
+          "staff+": 0.0,
+          "junior": 0.5
+        },
+        "confusion": {
+          "junior->junior": 1,
+          "junior->None": 1,
+          "senior->senior": 8,
+          "senior->None": 3,
+          "staff+->senior": 1,
+          "staff+->None": 1,
+          "None->senior": 2,
+          "None->staff+": 1,
+          "None->None": 33
+        }
+      }
+    },
+    "tokens": {
+      "input": 911596,
+      "output": 73017,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "rates_usd_per_mtok": {
+      "input": 0.1,
+      "output": 0.5,
+      "cache_read": 0.01,
+      "cache_write": 0.125
+    },
+    "price_source": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "cost_complete": true,
+    "errors": [],
+    "usage_missing": false,
+    "model_responses": 210,
+    "cost_usd": 0.1276681,
+    "p50_ms": 5991.7644540037145,
+    "p95_ms": 13607.435205994989
+  },
+  {
+    "config": "W",
+    "split": "dev",
+    "model": "claude-haiku-5-5",
+    "labels_from": "labeled.jsonl",
+    "ts": "2026-10-30T08:17:38.369233+00:00",
+    "comment_ids": [
+      "46858476",
+      "46858532",
+      "46859629",
+      "46859924",
+      "46863917",
+      "46869120",
+      "46870506",
+      "46875351",
+      "46888712",
+      "46893914",
+      "46959004",
+      "47220091",
+      "47220599",
+      "47220965",
+      "47220989",
+      "47223968",
+      "47225525",
+      "47229954",
+      "47232351",
+      "47241526",
+      "47255238",
+      "47256159",
+      "47308369",
+      "47603990",
+      "47605264",
+      "47605460",
+      "47609507",
+      "47610945",
+      "47614308",
+      "47632126",
+      "47673074",
+      "47676433",
+      "47975959",
+      "47976872",
+      "47979394",
+      "47980297",
+      "47986820",
+      "48021354",
+      "48023051",
+      "48102189",
+      "48358258",
+      "48362254",
+      "48365334",
+      "48376486",
+      "48749084",
+      "48749443",
+      "48752786",
+      "48787393",
+      "48794583",
+      "48804695",
+      "48819370"
+    ],
+    "n": 51,
+    "skipped_missing": [
+      "47625506",
+      "48747987"
+    ],
+    "scores": {
+      "company": {
+        "n": 51,
+        "coverage": 0.9412,
+        "precision": 0.9583,
+        "precision_ci95": [
+          0.8602,
+          0.9885
+        ],
+        "precision_margin": 0.0641,
+        "hallucination_rate": 0.0,
+        "outcomes": {
+          "abstained": 2,
+          "extracted": 46,
+          "missed": 1,
+          "wrong": 2
+        }
+      },
+      "salary": {
+        "n": 51,
+        "coverage": 0.1373,
+        "precision": 1.0,
+        "precision_ci95": [
+          0.6457,
+          1.0
+        ],
+        "precision_margin": 0.1772,
+        "hallucination_rate": 0.0,
+        "outcomes": {
+          "abstained": 44,
+          "extracted": 7
+        }
+      },
+      "location": {
+        "n": 51,
+        "coverage": 0.7451,
+        "precision": 0.6579,
+        "precision_ci95": [
+          0.4989,
+          0.7879
+        ],
+        "precision_margin": 0.1445,
+        "hallucination_rate": 0.0392,
+        "outcomes": {
+          "abstained": 10,
+          "extracted": 25,
+          "hallucinated": 2,
+          "missed": 3,
+          "wrong": 11
+        }
+      },
+      "skills": {
+        "n": 51,
+        "macro_f1": 0.7949,
+        "macro_precision": 0.7539,
+        "macro_recall": 0.8945
+      },
+      "remote": {
+        "n": 51,
+        "accuracy": 0.8627,
+        "per_class_recall": {
+          "None": 1.0,
+          "remote": 0.7857,
+          "hybrid": 0.875,
+          "onsite": 1.0
+        },
+        "confusion": {
+          "hybrid->hybrid": 7,
+          "hybrid->None": 1,
+          "onsite->onsite": 8,
+          "remote->hybrid": 4,
+          "remote->remote": 22,
+          "remote->None": 2,
+          "None->None": 7
+        }
+      },
+      "seniority": {
+        "n": 51,
+        "accuracy": 0.8627,
+        "per_class_recall": {
+          "None": 0.9444,
+          "senior": 0.9091,
+          "staff+": 0.0,
+          "junior": 0.0
+        },
+        "confusion": {
+          "junior->None": 2,
+          "senior->senior": 10,
+          "senior->None": 1,
+          "staff+->senior": 1,
+          "staff+->None": 1,
+          "None->senior": 1,
+          "None->staff+": 1,
+          "None->None": 34
+        }
+      }
+    },
+    "tokens": {
+      "input": 90124,
+      "output": 12116,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "rates_usd_per_mtok": {
+      "input": 0.1,
+      "output": 0.5,
+      "cache_read": 0.01,
+      "cache_write": 0.125
+    },
+    "price_source": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "cost_complete": false,
+    "errors": [
+      {
+        "comment_id": "47220989",
+        "error": "ValidationError: 1 validation error for Extraction\nseniority\n  Input should be 'junior', 'mid', 'senior' or 'staff+' [type=literal_error, input_value='', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.13/v/literal_error"
+      }
+    ],
+    "usage_missing": false,
+    "model_responses": 56,
+    "cost_usd": 0.0150704,
+    "p50_ms": 1370.859083996038,
+    "p95_ms": 3209.865290002199
+  },
+  {
+    "config": "F",
+    "split": "dev",
+    "model": "claude-haiku-5-5",
+    "labels_from": "labeled.jsonl",
+    "ts": "2026-10-30T08:17:59.633105+00:00",
+    "comment_ids": [
+      "46858476",
+      "46858532",
+      "46859629",
+      "46859924",
+      "46863917",
+      "46869120",
+      "46870506",
+      "46875351",
+      "46888712",
+      "46893914",
+      "46959004",
+      "47220091",
+      "47220599",
+      "47220965",
+      "47220989",
+      "47223968",
+      "47225525",
+      "47229954",
+      "47232351",
+      "47241526",
+      "47255238",
+      "47256159",
+      "47308369",
+      "47603990",
+      "47605264",
+      "47605460",
+      "47609507",
+      "47610945",
+      "47614308",
+      "47632126",
+      "47673074",
+      "47676433",
+      "47975959",
+      "47976872",
+      "47979394",
+      "47980297",
+      "47986820",
+      "48021354",
+      "48023051",
+      "48102189",
+      "48358258",
+      "48362254",
+      "48365334",
+      "48376486",
+      "48749084",
+      "48749443",
+      "48752786",
+      "48787393",
+      "48794583",
+      "48804695",
+      "48819370"
+    ],
+    "n": 51,
+    "skipped_missing": [
+      "47625506",
+      "48747987"
+    ],
+    "scores": {
+      "company": {
+        "n": 51,
+        "coverage": 0.9608,
+        "precision": 0.8776,
+        "precision_ci95": [
+          0.7576,
+          0.9427
+        ],
+        "precision_margin": 0.0925,
+        "hallucination_rate": 0.0,
+        "outcomes": {
+          "abstained": 2,
+          "extracted": 43,
+          "wrong": 6
+        }
+      },
+      "salary": {
+        "n": 51,
+        "coverage": 0.098,
+        "precision": 1.0,
+        "precision_ci95": [
+          0.5655,
+          1.0
+        ],
+        "precision_margin": 0.2172,
+        "hallucination_rate": 0.0,
+        "outcomes": {
+          "abstained": 44,
+          "extracted": 5,
+          "missed": 2
+        }
+      },
+      "location": {
+        "n": 51,
+        "coverage": 0.902,
+        "precision": 0.6304,
+        "precision_ci95": [
+          0.486,
+          0.7548
+        ],
+        "precision_margin": 0.1344,
+        "hallucination_rate": 0.1373,
+        "outcomes": {
+          "abstained": 5,
+          "extracted": 29,
+          "hallucinated": 7,
+          "wrong": 10
+        }
+      },
+      "skills": {
+        "n": 51,
+        "macro_f1": 0.7263,
+        "macro_precision": 0.8312,
+        "macro_recall": 0.6899
+      },
+      "remote": {
+        "n": 51,
+        "accuracy": 0.8824,
+        "per_class_recall": {
+          "None": 1.0,
+          "remote": 0.8571,
+          "hybrid": 0.75,
+          "onsite": 1.0
+        },
+        "confusion": {
+          "hybrid->hybrid": 6,
+          "hybrid->onsite": 1,
+          "hybrid->remote": 1,
+          "onsite->onsite": 8,
+          "remote->hybrid": 4,
+          "remote->remote": 24,
+          "None->None": 7
+        }
+      },
+      "seniority": {
+        "n": 51,
+        "accuracy": 0.7059,
+        "per_class_recall": {
+          "None": 0.6667,
+          "senior": 0.9091,
+          "staff+": 0.0,
+          "junior": 1.0
+        },
+        "confusion": {
+          "junior->junior": 2,
+          "senior->senior": 10,
+          "senior->staff+": 1,
+          "staff+->senior": 2,
+          "None->senior": 5,
+          "None->staff+": 7,
+          "None->None": 24
+        }
+      }
+    },
+    "tokens": {
+      "input": 23010,
+      "output": 1177,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "rates_usd_per_mtok": {
+      "input": 0.1,
+      "output": 0.5,
+      "cache_read": 0.01,
+      "cache_write": 0.125
+    },
+    "price_source": "https://platform.claude.com/docs/en/about-claude/pricing",
+    "cost_complete": true,
+    "errors": [],
+    "usage_missing": false,
+    "model_responses": 23,
+    "cost_usd": 0.0028895,
+    "p50_ms": 1.7992530047195032,
+    "p95_ms": 1047.2630889998982
+  }
+]
