@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import RunLabel from "../../components/RunLabel";
 import RungsTable from "../../components/RungsTable";
 import EmptyState from "../../components/EmptyState";
-import { COMMANDS, readRungs } from "../../lib/data";
-import { RUNGS } from "../../lib/content";
+import { COMMANDS, readRungs, readBaselineRuns } from "../../lib/data";
+import { RUNGS, torontoTime } from "../../lib/content";
 
 export const metadata: Metadata = { title: "Evaluation ladder" };
 
 export default async function RungsPage() {
-  const rows = await readRungs();
+  const [rows, baselines] = await Promise.all([readRungs(), readBaselineRuns()]);
+  const baseline = baselines?.find((row) => row.config === "rules (baseline)" && row.split === "dev");
   return (
     <div className="space-y-10">
       <section>
         <p className="eyebrow text-orange-700">The experiment</p>
         <h1 className="page-title">Does added complexity help?</h1>
         <p className="page-intro">The ladder compares extraction methods on the same labeled posts. It is built to measure what changes when an LLM gets tools, guidance, a rules first pass or a fixed sequence of steps.</p>
-        <p className="mt-5 rounded-xl border border-orange-200 bg-orange-50 px-5 py-4 text-sm leading-7 text-orange-950"><strong>Implemented, not yet measured on real data.</strong> B, C, D, E, W and F are implemented. The ladder has not been run on real data, so no real-data accuracy, cost or speed comparison is available.</p>
+        <RunLabel rows={rows ?? []} />
       </section>
 
       <section aria-labelledby="methods-title">
@@ -31,11 +33,12 @@ export default async function RungsPage() {
 
       <section aria-labelledby="results-title">
         <h2 id="results-title" className="section-title">Accuracy & cost report</h2>
-        <p className="mb-5 mt-3 text-sm leading-7 text-slate-600">This area reads the local ladder report when one is available. Scores compare predictions with reference labels; they do not come from the rules history counts.</p>
+        <p className="mb-5 mt-3 text-sm leading-7 text-slate-600">Results come from the committed local ladder report. Scores compare predictions with reference labels; they do not come from the rules history counts.</p>
         {rows ? <RungsTable rows={rows} /> : <EmptyState title="The comparison will appear after a ladder run" command={COMMANDS.rungs}
           prerequisite="Requires labeled posts and their source posts in data/raw/, plus ANTHROPIC_API_KEY, a pinned STRONG_MODEL, all four LLM_*_USD_PER_MTOK rates and LLM_PRICE_SOURCE in .env. This command makes paid model calls.">
           There is no readable ladder report here yet. A run will produce field scores, uncertainty ranges, token-based USD costs and per-post timings for each method and dataset split.
         </EmptyState>}
+        {baseline && <div className="mt-6"><h3 className="text-lg font-semibold">Rules (baseline) · separate historical dev evaluation</h3><p className="my-3 text-sm leading-7 text-slate-600">Committed config “rules (baseline)” · N={baseline.n} posts · run {torontoTime(baseline.ts)} America/Toronto. This 2026-09-22 evaluation covers 53 posts; the ladder covers 51, so this is not a matched-sample comparison.</p><RungsTable rows={baseline.rows} /></div>}
       </section>
 
       <section className="card p-6 sm:p-8" aria-labelledby="scores-title">

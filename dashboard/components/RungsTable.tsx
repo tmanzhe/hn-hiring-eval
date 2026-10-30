@@ -1,36 +1,42 @@
 "use client";
 
 import { useState } from "react";
+import { torontoTime } from "../lib/content";
 import type { RungRow } from "../lib/parsers";
 
-type Column = { key: keyof RungRow; label: string };
+type ColumnKey = Exclude<keyof RungRow, "outcomes" | "skipped_missing">;
+type Column = { key: ColumnKey; label: string };
 const COLUMNS: Column[] = [
   { key: "config", label: "Method" }, { key: "split", label: "Dataset split" },
-  { key: "model", label: "Model" }, { key: "field", label: "Field" }, { key: "n", label: "n" },
+  { key: "model", label: "Model" }, { key: "ts", label: "Run (America/Toronto)" }, { key: "field", label: "Field" }, { key: "n", label: "n" },
   { key: "accuracy", label: "Accuracy" }, { key: "accuracy_ci95", label: "Accuracy Wilson 95% CI" },
   { key: "precision", label: "Precision" }, { key: "precision_ci95", label: "Precision Wilson 95% CI" },
+  { key: "hallucination_rate", label: "Hallucination rate" },
   { key: "macro_f1", label: "Skills macro-F1" }, { key: "cost_usd", label: "Cost (USD)" },
+  { key: "cost_per_post", label: "USD / post" }, { key: "model_responses", label: "Model responses" },
+  { key: "errors", label: "Errors" },
   { key: "cost_complete", label: "Cost complete" },
   { key: "p50_ms", label: "p50 (ms)" }, { key: "p95_ms", label: "p95 (ms)" },
 ];
 const percent = (value: number) => `${(value * 100).toFixed(1)}%`;
 
-function display(row: RungRow, key: keyof RungRow): string {
+function display(row: RungRow, key: ColumnKey): string {
   const value = row[key];
   if (value === null) return "—";
+  if (key === "ts") return torontoTime(row.ts);
   if (Array.isArray(value)) return `${percent(value[0])} to ${percent(value[1])}`;
   if (typeof value === "boolean") return value ? "Yes" : "No (incomplete)";
   if (typeof value === "number") {
-    if (key === "accuracy" || key === "precision") return percent(value);
+    if (key === "accuracy" || key === "precision" || key === "hallucination_rate") return percent(value);
     if (key === "macro_f1") return value.toFixed(3);
-    if (key === "cost_usd") return `${value.toFixed(6)}${row.cost_complete ? "" : " (incomplete)"}`;
+    if (key === "cost_usd" || key === "cost_per_post") return `${value.toFixed(6)}${row.cost_complete ? "" : " (incomplete)"}`;
     if (key === "p50_ms" || key === "p95_ms") return value.toFixed(1);
   }
   return String(value);
 }
 
 export default function RungsTable({ rows }: { rows: RungRow[] }) {
-  const [sort, setSort] = useState<{ key: keyof RungRow; ascending: boolean }>({ key: "config", ascending: true });
+  const [sort, setSort] = useState<{ key: ColumnKey; ascending: boolean }>({ key: "config", ascending: true });
   const columns = COLUMNS.filter(({ key }) =>
     (key !== "p50_ms" && key !== "p95_ms") || rows.some((row) => row[key] !== null));
   const sorted = [...rows].sort((a, b) => {
@@ -46,7 +52,7 @@ export default function RungsTable({ rows }: { rows: RungRow[] }) {
   return (
     <div className="table-scroll" role="region" aria-label="Ladder scores, scroll horizontally for all columns" tabIndex={0}>
       <table>
-        <caption>Each row is one method, dataset split and field. Higher scores mean closer agreement with labels. Cost covers the whole method/split and repeats across fields; do not add these rows. Click headings to sort; uncertainty ranges sort by their lower bound. A dash means that metric does not apply.</caption>
+        <caption>Each row is one method, dataset split and field. Higher scores mean closer agreement with labels. Cost covers the whole method/split and repeats across fields; do not add these rows. Click headings to sort; uncertainty ranges sort by their lower bound. A dash means the metric does not apply or was not recorded. Rules costs, model responses and errors were not recorded. Hallucination rates apply to company, salary and location.</caption>
         <thead><tr>{columns.map(({ key, label }) => (
           <th key={key} scope="col" aria-sort={sort.key === key ? (sort.ascending ? "ascending" : "descending") : "none"}>
             <button type="button" onClick={() => setSort({ key, ascending: sort.key === key ? !sort.ascending : true })}>
