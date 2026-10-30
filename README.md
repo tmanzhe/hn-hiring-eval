@@ -160,6 +160,7 @@ request path lets it.
 
 ## Running it
 
+Dashboard: `cd dashboard && npm install && npm run dev` (static build: `npm run build`; Vercel root directory: `dashboard`).
 ```sh
 uv sync                  # curl -LsSf https://astral.sh/uv/install.sh | sh
 cp .env.example .env     # add ANTHROPIC_API_KEY
