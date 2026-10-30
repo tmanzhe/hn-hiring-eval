@@ -21,19 +21,29 @@ from ingest.normalize import normalize
 LADDER_CONFIGS = ('B', 'C', 'D', 'E', 'W', 'F')
 
 
+def parse_configs(value):
+    """Validate comma-separated rung names and return them in canonical ladder order."""
+    names = [name.strip().upper() for name in value.split(',')]
+    invalid = [name for name in names if name not in LADDER_CONFIGS]
+    if invalid:
+        raise argparse.ArgumentTypeError(
+            f'invalid rung name(s): {", ".join(repr(name) for name in invalid)}; '
+            f'valid rungs: {", ".join(LADDER_CONFIGS)}')
+    return tuple(config for config in LADDER_CONFIGS if config in names)
+
+
 def cost_complete(config, responses, missing, errors):
     """F can legitimately skip every model call when rules fill both target fields."""
     return not errors and not missing and (responses > 0 or config == 'F')
 
 
-def build_disagreement_report(runs):
+def build_disagreement_report(runs, configs=LADDER_CONFIGS):
     """Build Markdown from (config, split, pairs) runs, using already-normalized predictions.
 
     Delegate matching to the existing scores block. Skills use the underlying pair scorer
     so rounding macro-F1 for display cannot hide a partial mismatch.
     """
     fields = ('company', 'salary', 'location', 'skills', 'remote', 'seniority')
-    configs = LADDER_CONFIGS
     grouped = {field: {config: [] for config in configs} for field in fields}
 
     def cell(value):
@@ -93,6 +103,8 @@ def build_disagreement_report(runs):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument('--config', type=parse_configs, default=LADDER_CONFIGS, metavar='RUNGS',
+                    help='single rung or comma-separated rungs (default: all)')
     ap.add_argument('--split', choices=['dev', 'held-out', 'all'], default='dev')
     ap.add_argument('--limit', type=int, help='first N labeled posts per selected split')
     ap.add_argument('--output', type=Path, default=Path('evals/cost-quality.md'))
@@ -188,7 +200,7 @@ def main():
 
     rows = []
     disagreement_runs = []
-    for config in LADDER_CONFIGS:
+    for config in args.config:
         for split, (labels, posts, label_source) in datasets.items():
             usage = Usage()
             # Disable SDK retries: a retry can hide a billed response whose usage was lost.
@@ -231,7 +243,7 @@ def main():
     lines = ['# LLM cost vs quality', '', f'Model: {model}. Pricing source: {source}.', '',
              'Unweighted labeled-set scores; parentheses contain 95% Wilson intervals. '
              'Skills macro-F1 has no Wilson interval. Costs are USD.', '']
-    for config in LADDER_CONFIGS:
+    for config in args.config:
         selected = [r for r in rows if r['config'] == config]
         lines += [f'## Config {config}', '']
         headers = [f"{r['split'].capitalize()} (n={r['n']})" for r in selected]
@@ -265,7 +277,8 @@ def main():
     print(f'Wrote {args.output} and {detail}')
     if args.disagreements is not None:
         args.disagreements.parent.mkdir(parents=True, exist_ok=True)
-        args.disagreements.write_text(build_disagreement_report(disagreement_runs), encoding='utf-8')
+        args.disagreements.write_text(
+            build_disagreement_report(disagreement_runs, args.config), encoding='utf-8')
         print(f'Wrote {args.disagreements}')
     if any(not row['cost_complete'] for row in rows):
         raise SystemExit('Some calls failed or returned invalid/missing usage. '
