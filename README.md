@@ -167,6 +167,7 @@ cp .env.example .env     # add ANTHROPIC_API_KEY
 
 ```sh
 uv run ingest/fetch.py --months 6   # writes data/raw/<thread_id>.json
+uv run ingest/rules_history.py --thread 48747976 --history data/rules_history.jsonl  # rules-only counts and trends; no API key
 uv run ingest/dump.py -n 20         # prints posts to read
 uv run ingest/rules_poc.py -n 20    # crude regex pass, coverage only
 uv run evals/score_poc.py           # scores rules against evals/poc_labels.jsonl
