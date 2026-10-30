@@ -22,8 +22,15 @@ export type RungRow = {
   precision: number | null;
   precision_ci95: Interval | null;
   macro_f1: number | null;
-  cost_usd: number;
-  cost_complete: boolean;
+  ts: string;
+  skipped_missing: string[];
+  model_responses: number | null;
+  errors: string | null;
+  outcomes: Record<string, number> | null;
+  hallucination_rate: number | null;
+  cost_per_post: number | null;
+  cost_usd: number | null;
+  cost_complete: boolean | null;
   p50_ms: number | null;
   p95_ms: number | null;
 };
@@ -52,6 +59,7 @@ export type BaselineRun = {
   n: number;
   ts: string;
   location: Record<string, number>;
+  rows: RungRow[];
 };
 
 export function parsePipelineLabels(text: string): PipelineLabel[] {
@@ -78,7 +86,7 @@ export function parseFixtureThread(text: string): FixtureThread {
 export function parseBaselineRuns(text: string): BaselineRun[] {
   return text.split(/\r?\n/).filter((line) => line.trim()).flatMap((line) => {
     const row = object(JSON.parse(line));
-    if (typeof row.config !== "string" || !row.config.startsWith("rules")) return [];
+    if (typeof row.config !== "string" || row.config !== "rules (baseline)") return [];
     // Rules runs have no LLM cost block; validate their own committed schema.
     const n = count(row.n);
     const score = object(object(row.scores).location);
@@ -87,7 +95,7 @@ export function parseBaselineRuns(text: string): BaselineRun[] {
     if (count(score.n) !== n || Object.values(location).reduce((sum, value) => sum + value, 0) !== n) {
       throw new Error("Outcome counts do not match n");
     }
-    return [{ config: row.config, split: string(row.split), n, ts: string(row.ts), location }];
+    return [{ config: row.config, split: string(row.split), n, ts: string(row.ts), location, rows: parseRungs(JSON.stringify([row])) }];
   }).sort((a, b) => a.ts.localeCompare(b.ts));
 }
 
@@ -169,9 +177,17 @@ export function parseRungs(text: string): RungRow[] {
   return runs.flatMap((value) => {
     const run = object(value);
     const config = string(run.config), split = string(run.split), model = string(run.model);
-    const runN = count(run.n), cost_usd = number(run.cost_usd);
-    if (typeof run.cost_complete !== "boolean") throw new Error("Missing cost status");
-    const cost_complete = run.cost_complete;
+    const baseline = config === "rules (baseline)";
+    const runN = count(run.n), cost_usd = baseline ? null : number(run.cost_usd);
+    if (!baseline && typeof run.cost_complete !== "boolean") throw new Error("Missing cost status");
+    const cost_complete = baseline ? null : run.cost_complete as boolean;
+    const ts = string(run.ts);
+    const skipped_missing = Array.isArray(run.skipped_missing) ? run.skipped_missing.map(string) : [];
+    const model_responses = run.model_responses == null ? null : count(run.model_responses);
+    const errors = Array.isArray(run.errors) ? run.errors.map((value) => {
+      const error = object(value);
+      return `Post ${string(error.comment_id)}: ${string(error.error)}`;
+    }).join("; ") || "0" : null;
     const p50_ms = run.p50_ms == null ? null : number(run.p50_ms);
     const p95_ms = run.p95_ms == null ? null : number(run.p95_ms);
     const scores = object(run.scores);
@@ -215,7 +231,11 @@ export function parseRungs(text: string): RungRow[] {
         accuracy_ci95 = score.accuracy_ci95 === undefined
           ? wilson(correct, n) : interval(score.accuracy_ci95);
       }
-      return { config, split, model, field, n, accuracy, accuracy_ci95, precision,
+      return { config, split, model, field, n, ts, skipped_missing, model_responses, errors,
+        outcomes: score.outcomes === undefined ? null : Object.fromEntries(Object.entries(object(score.outcomes)).map(([key, value]) => [key, count(value)])),
+        hallucination_rate: score.hallucination_rate == null ? null : proportion(score.hallucination_rate),
+        cost_per_post: cost_usd === null || !runN ? null : cost_usd / runN,
+        accuracy, accuracy_ci95, precision,
         precision_ci95, macro_f1, cost_usd, cost_complete, p50_ms, p95_ms };
     });
   });

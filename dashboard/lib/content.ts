@@ -29,3 +29,16 @@ export const formatPercent = (value: number, total: number) =>
 export const formatDate = (date: string) => new Date(`${date}T12:00:00Z`).toLocaleDateString("en-US", {
   month: "short", day: "numeric", year: "numeric", timeZone: "UTC",
 });
+
+export const percent = (value: number) => `${(value * 100).toFixed(1)}%`;
+export const torontoTime = (ts: string) => new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Toronto", year: "numeric", month: "2-digit", day: "2-digit",
+  hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+}).format(new Date(ts));
+
+export function ladderLabel(rows: { model: string; n: number; ts: string }[]): string {
+  if (!rows.length) return "No readable ladder report available.";
+  const times = [...new Set(rows.map((row) => row.ts))].sort();
+  const model = rows[0].model;
+  return `${model === "claude-haiku-5-5" ? "Haiku" : model} (${model}), N=${rows[0].n} posts, run ${torontoTime(times[0])}–${torontoTime(times[times.length - 1])} America/Toronto · dev split`;
+}

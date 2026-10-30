@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "HN Hiring Eval · Overview", template: "%s · HN Hiring Eval" },
-  description: "Structured extraction of Hacker News hiring posts, with rules-only history and an implemented evaluation ladder for comparing accuracy and cost.",
+  description: "Structured extraction of Hacker News hiring posts, with rules-only history and a measured Haiku evaluation ladder for comparing accuracy and cost.",
 };
 export const dynamic = "force-static";
 
