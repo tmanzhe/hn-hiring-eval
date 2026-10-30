@@ -204,6 +204,7 @@ Held-out only, or a cheap smoke run on two dev posts **per config**:
 ```sh
 uv run --env-file .env --extra agent evals/ladder.py --split held-out
 uv run --env-file .env --extra agent evals/ladder.py --split dev --limit 2
+uv run --env-file .env --extra agent evals/ladder.py --config B,F  # single rung or comma-separated list; default: all
 ```
 
 `--split dev` is the default; `--split all` keeps dev and held-out scores separate.
