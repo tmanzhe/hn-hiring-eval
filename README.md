@@ -200,6 +200,23 @@ using the same posts for every config. It is a smoke sample, not a quality estim
 The runner uses the existing label loader (`labeled.jsonl`, falling back to
 `poc_labels.jsonl`) and needs those posts already present in `data/raw/`.
 
+Add `--disagreements [PATH]` to audit disagreements with the Claude-drafted gold labels:
+
+```sh
+uv run --env-file .env --extra agent evals/ladder.py --split all --disagreements
+```
+
+The flag writes `evals/disagreements.md` by default; `--disagreements PATH` chooses another
+file. Omitting the flag writes no disagreement report. The report starts with per-field,
+per-config counts across the selected splits, then lists every disagreement grouped by
+field and config (B, C, D, E, W), including split, post/label ID, label value, and model value.
+It covers the six scored fields and reuses the existing scoring matches and normalization:
+nullable extracted/abstained outcomes agree, skills require normalized per-post F1 of 1,
+and enums require exact agreement. Label salaries retain their recorded period; model
+salary bounds are annualized as in scoring. Use this to check whether the labels favor
+Claude. The report replaces its previous output and is also written before an incomplete-cost
+run exits nonzero.
+
 The command writes `evals/cost-quality.md` and `evals/cost-quality.json`, replacing
 previous output. Use `--output PATH.md` (a `.md` suffix is required) to preserve separate runs.
 Each config has the same field rows, precision/95% Wilson notation, skills macro-F1,
