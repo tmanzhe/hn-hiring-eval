@@ -1,6 +1,7 @@
 """Step 15 and 16. Run a config over a split, score every field, append one row to runs.jsonl.
 
     uv run evals/run.py --config rules --split dev
+    uv run evals/run.py --config rules --split held-out --dry-run
     uv run evals/run.py --config agent:C --split dev
     uv run evals/run.py --report                      # print the frontier table
 
@@ -43,14 +44,31 @@ from ingest.rules import parse
 LABELS = Path(__file__).resolve().parent / "labeled.jsonl"
 POC_LABELS = Path(__file__).resolve().parent / "poc_labels.jsonl"
 RUNS = Path(__file__).resolve().parent / "runs.jsonl"
+SPLITS = Path(__file__).resolve().parent / "splits.json"
 
 
 def load_labels(split: str | None):
-    """labeled.jsonl if it exists, otherwise the POC ten, so the harness is runnable earlier."""
+    """Use frozen IDs for the 80-post eval; dev is an alias for tune.
+
+    Fall back to the POC labels and their original split metadata before labeling is complete.
+    """
+    if split not in (None, "all", "dev", "tune", "held-out"):
+        raise SystemExit(f"unknown split {split!r}. try: tune, dev, held-out, all")
     path = LABELS if LABELS.exists() else POC_LABELS
     rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
     rows = [r for r in rows if r.get("done")]
-    if split:
+    if path == LABELS:
+        splits = json.loads(SPLITS.read_text())
+        fixed_ids = splits["tune"] + splits["held-out"]
+        label_ids = [r["comment_id"] for r in rows]
+        if (len(fixed_ids) != len(set(fixed_ids))
+                or len(label_ids) != len(fixed_ids) or set(label_ids) != set(fixed_ids)):
+            raise SystemExit("completed labels must match the frozen split IDs exactly")
+        if split not in (None, "all"):
+            selected = set(splits["tune" if split == "dev" else split])
+            rows = [r for r in rows if r["comment_id"] in selected]
+    elif split not in (None, "all"):
+        split = "dev" if split == "tune" else split
         rows = [r for r in rows if r.get("split", "dev") == split]
     if not rows:
         raise SystemExit(
@@ -202,7 +220,8 @@ def report():
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--config", default="rules")
-    ap.add_argument("--split", default=None, help="dev | held-out. omit for all")
+    ap.add_argument("--split", choices=["tune", "dev", "held-out", "all"], default=None,
+                    help="fixed tune (alias: dev) | held-out | all. omit for all")
     ap.add_argument("--report", action="store_true", help="print the table, run nothing")
     ap.add_argument("--dry-run", action="store_true", help="score but don't append a row")
     args = ap.parse_args()
