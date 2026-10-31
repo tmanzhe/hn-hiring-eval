@@ -65,9 +65,9 @@ def build_disagreement_report(runs, configs=LADDER_CONFIGS):
                 if agrees:
                     continue
                 if field == 'salary':
-                    label_value = dict(min=label.get('salary_min'), max=label.get('salary_max'),
-                                       period=label.get('salary_period') or 'year')
-                    model_value = dict(min=prediction.salary_min, max=prediction.salary_max)
+                    label_value = {'min': label.get('salary_min'), 'max': label.get('salary_max'),
+                                   'period': label.get('salary_period') or 'year'}
+                    model_value = {'min': prediction.salary_min, 'max': prediction.salary_max}
                 else:
                     label_value = label.get(field, [] if field == 'skills' else None)
                     model_value = getattr(prediction, field)
@@ -76,18 +76,18 @@ def build_disagreement_report(runs, configs=LADDER_CONFIGS):
                     f'| {cell(model_value)} |')
 
     lines = ['# LLM disagreements with Claude-drafted gold labels', '',
-             'Audit these disagreements to check whether the labels favor Claude. '
-             'Counts are disagreeing posts per field/config, pooled across selected splits.', '',
+             ('Audit these disagreements to check whether the labels favor Claude. '
+              'Counts are disagreeing posts per field/config, pooled across selected splits.'), '',
              '| Field | ' + ' | '.join(configs) + ' |',
              '| --- | ' + ' | '.join('---:' for _ in configs) + ' |']
     for field in fields:
         lines.append('| ' + field + ' | '
                      + ' | '.join(str(len(grouped[field][config])) for config in configs) + ' |')
-    lines += ['', 'Only the six scored fields are included. Nullable extracted/abstained outcomes '
-              'are agreements; skills disagree whenever normalized per-post F1 is below 1; '
-              'enums use scorer accuracy. Label values are shown as recorded. '
-              'Model values are the normalized predictions used for scoring; salary min/max '
-              'are annualized, while the label retains its original period.', '']
+    lines += ['', ('Only the six scored fields are included. Nullable extracted/abstained outcomes '
+                   'are agreements; skills disagree whenever normalized per-post F1 is below 1; '
+                   'enums use scorer accuracy. Label values are shown as recorded. '
+                   'Model values are the normalized predictions used for scoring; salary min/max '
+                   'are annualized, while the label retains its original period.'), '']
     for field in fields:
         lines += [f'## {field}', '']
         for config in configs:
@@ -240,24 +240,26 @@ def main():
                     errors.append({'comment_id': label['comment_id'], 'error': trace.error})
             # Failed calls can be billed without returning usage. Never label that cost complete.
             complete = cost_complete(config, usage.responses, usage.missing, errors)
-            row = dict(config=config, split=split, model=model, labels_from=label_source,
-                       ts=datetime.now(UTC).isoformat(),
-                       comment_ids=[label['comment_id'] for label in labels], n=len(labels),
-                       skipped_missing=skipped_missing[split],
-                       scores=score_rows(pairs), tokens=usage.tokens, rates_usd_per_mtok=rates,
-                       price_source=source, cost_complete=complete, errors=errors,
-                       usage_missing=usage.missing, model_responses=usage.responses,
-                       cost_usd=sum(usage.tokens[k] * rates[k] for k in rates) / 1_000_000,
-                       p50_ms=statistics.median(latencies),
-                       p95_ms=sorted(latencies)[math.ceil(len(latencies) * .95) - 1])
+            row = {
+                'config': config, 'split': split, 'model': model, 'labels_from': label_source,
+                'ts': datetime.now(UTC).isoformat(),
+                'comment_ids': [label['comment_id'] for label in labels], 'n': len(labels),
+                'skipped_missing': skipped_missing[split],
+                'scores': score_rows(pairs), 'tokens': usage.tokens, 'rates_usd_per_mtok': rates,
+                'price_source': source, 'cost_complete': complete, 'errors': errors,
+                'usage_missing': usage.missing, 'model_responses': usage.responses,
+                'cost_usd': sum(usage.tokens[k] * rates[k] for k in rates) / 1_000_000,
+                'p50_ms': statistics.median(latencies),
+                'p95_ms': sorted(latencies)[math.ceil(len(latencies) * .95) - 1],
+            }
             rows.append(row)
             if args.disagreements is not None:
                 disagreement_runs.append((config, split, pairs))
             print(f'{config} / {split}: {len(labels)} posts, {len(errors)} errors', flush=True)
 
     lines = ['# LLM cost vs quality', '', f'Model: {model}. Pricing source: {source}.', '',
-             'Unweighted labeled-set scores; parentheses contain 95% Wilson intervals. '
-             'Skills macro-F1 has no Wilson interval. Costs are USD.', '']
+             ('Unweighted labeled-set scores; parentheses contain 95% Wilson intervals. '
+              'Skills macro-F1 has no Wilson interval. Costs are USD.'), '']
     for config in args.config:
         selected = [r for r in rows if r['config'] == config]
         lines += [f'## Config {config}', '']

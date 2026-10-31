@@ -121,9 +121,9 @@ def test_only_selected_rungs_execute_and_appear_in_reports(monkeypatch, tmp_path
 
 
 def test_disagreement_report_uses_scoring_matches_and_groups_field_then_config():
-    label = dict(comment_id=101, company='Acme', location='San Francisco',
-                 salary_min=30, salary_max=40, salary_period='hour',
-                 skills=['Kubernetes'], remote='remote', seniority='senior')
+    label = {'comment_id': 101, 'company': 'Acme', 'location': 'San Francisco',
+             'salary_min': 30, 'salary_max': 40, 'salary_period': 'hour',
+             'skills': ['Kubernetes'], 'remote': 'remote', 'seniority': 'senior'}
     agrees = normalize(Extraction(company='Acme', location=' SAN FRANCISCO ',
                                   salary_min=30, salary_max=40, salary_period='hour',
                                   skills=['k8s'], remote='remote', seniority='senior'))
