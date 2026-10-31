@@ -16,8 +16,8 @@ through embedded DuckDB. On the eval side there are scorers for every field, a s
 sampler, and a labeling tool that deliberately hides the parser's output from whoever's
 labeling. The configs go from A (rules only) up to E, plus W for the agent workflow and F
 for rules with a missing-field LLM fallback.
-`uv run agent/demo.py` runs the real agent graph against a scripted model, so you can poke at it
-without an API key.
+The [quickstart](#quickstart) runs the real agent graph against a scripted model, so you can
+poke at it without an API key.
 
 ## How I score things
 
@@ -149,13 +149,26 @@ writes the closing summary, and that's all it gets to do. Ask an LLM how many jo
 Terraform and it'll confidently hand you a number that looks right and isn't, so nothing in the
 request path lets it.
 
+## Quickstart
+
+You'll need Python 3.12+ and [uv](https://docs.astral.sh/uv/getting-started/installation/).
+From the repo root:
+
+```sh
+uv sync --extra agent
+HN_RAW_DIR=tests/fixtures uv run agent/demo.py
+```
+
+This uses a committed post and a scripted model. No API key, env file, download of HN posts,
+or paid calls. A lets the made-up company and salary through; W catches them and revises;
+C is scripted to use its verification tool. Look for `FABRICATION SURVIVED` under A and
+`clean` under W and C. This shows how the checks work, not how well a real model extracts.
+
 ## Running it
 
 Dashboard: `cd dashboard && npm install && npm run dev` (static build: `npm run build`; Vercel root directory: `dashboard`).
-```sh
-uv sync                  # curl -LsSf https://astral.sh/uv/install.sh | sh
-cp .env.example .env     # add ANTHROPIC_API_KEY
-```
+
+To fetch public HN posts and try the rules parser (no API key):
 
 ```sh
 uv run ingest/fetch.py --months 6   # writes data/raw/<thread_id>.json
@@ -165,7 +178,8 @@ uv run ingest/rules_poc.py -n 20    # crude regex pass, coverage only
 uv run evals/score_poc.py           # scores rules against evals/poc_labels.jsonl
 ```
 
-What's on disk right now: 6 threads, Feb to Jul 2026, 1,995 postings.
+The full corpus used for the results above had 6 threads, Feb to Jul 2026, 1,995 postings.
+It isn't in the repo; the fetch command gets the latest six months.
 
 ## Run the LLM cost vs quality ladder
 
