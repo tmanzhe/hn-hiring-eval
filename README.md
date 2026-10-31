@@ -1,6 +1,6 @@
 # hn-hiring-eval
 
-Turns Hacker News "Who is hiring?" posts into structured rows (company, salary, location, skills, remote, seniority) and measures how rules-based and LLM extraction compare on accuracy, cost and hallucination. Headline from the Haiku ladder (dev split, N=51): LLM rungs score 88–98% company precision and 0.73–0.80 skills F1, versus 89% and 0.72 for the rules baseline (N=53), but location precision stays at 54–74%, below the fixed rules parser's 82%, at $0.003–$0.13 per 51-post run. Small sample, wide confidence intervals; details in [evals/cost-quality.md](evals/cost-quality.md).
+Turns Hacker News "Who is hiring?" posts into structured rows (company, salary, location, skills, remote, seniority) and measures how rules-based and LLM extraction compare on accuracy, cost and hallucination. LLM ladder results are in [evals/cost-quality.md](evals/cost-quality.md).
 
 Scrapes HN "Who is hiring" threads and turns each posting into a structured row.
 
@@ -17,10 +17,7 @@ sampler, and a labeling tool that deliberately hides the parser's output from wh
 labeling. The configs go from A (rules only) up to E, plus W for the agent workflow and F
 for rules with a missing-field LLM fallback.
 `uv run agent/demo.py` runs the real agent graph against a scripted model, so you can poke at it
-without an API key. 288 tests, CI is green.
-
-80 posts are labeled and the rules baseline is scored. The LLM configs haven't been run yet
-because they need an API key, so the cost vs quality table only has the free rung in it so far.
+without an API key.
 
 ## How I score things
 
@@ -42,32 +39,23 @@ their intervals, I call it noise and move on.
 
 ## Eval results, rules baseline
 
-80 labeled posts, fixed as 53 tune (alias: dev) / 27 held-out; see the
-[ID lists and split note](evals/README.md#fixed-eval-split). The previous tuning round looked at
-all 80 posts, so held-out overlaps posts seen during tuning and is not a clean generalization
-estimate. The table below records the earlier baseline.
+80 labeled posts: 53 tune (alias: dev), 27 held-out. See the
+[ID lists and split note](evals/README.md#fixed-eval-split). The rules were tuned after looking
+at all 80 posts, so held-out overlaps tuning and isn't a clean generalization number.
 
-| Field      | Dev (n=53)            | Held-out (n=27)       | Halluc, held-out |
-| ---------- | --------------------- | --------------------- | ---------------: |
-| company    | 89.2% (75 to 96)      | 78.3% (58 to 90)      |             0.0% |
-| salary     | 100% (61 to 100)      | 88.9% (56 to 98)      |             3.7% |
-| location   | 82.1% (64 to 92)      | 70.6% (47 to 87)      |             3.7% |
-| skills F1  | 0.718                 | 0.671                 |                  |
-| remote     | 88.7% accuracy        | 88.9% accuracy        |                  |
-| seniority  | 71.7% accuracy        | 70.4% accuracy        |                  |
+Current rules scores on all 27 held-out posts:
 
-Precision with 95% Wilson intervals in brackets. Precision here means "when it answered, was it
-right", and coverage is tracked separately in `evals/runs.jsonl`. The rules pass takes about a
-millisecond a post and costs nothing.
+| Field     | Metric                | Score  | 95% Wilson interval | Coverage |
+| --------- | --------------------- | -----: | ------------------- | -------: |
+| company   | Precision on attempts |   100% | 86.68% to 100%      |   92.59% |
+| salary    | Precision on attempts |   100% | 67.56% to 100%      |   29.63% |
+| location  | Precision on attempts | 95.45% | 78.20% to 99.19%    |   81.48% |
+| skills    | Macro F1              | 0.9481 |                     |          |
+| remote    | Accuracy              |   100% |                     |          |
+| seniority | Accuracy              |   100% |                     |          |
 
-The big move was location. At baseline it was 8.1% precise on dev and 17.4% on held-out, with 9
-to 15% of answers made up. Bucketing the misses showed 33 of 43 were one bug: the parser was
-copying `Hybrid in Seattle, WA` and `REMOTE (US)` straight into the location column. Stripping
-the work arrangement out took it to 82% on dev and 71% on held-out, and cut location
-hallucination to 2 to 4%. The full breakdown by cause is in `evals/FAILURES.md`.
-
-What's left is mostly posts without a pipe header, where the company and place only show up in
-prose. Regex can't do anything with those, which is exactly the case the LLM fallback is for.
+Precision means "when it answered, was it right"; coverage is how often it answered.
+Company, salary and location each had 0% hallucination. This run made 0 API calls and cost $0.
 
 CI runs the parser over all 80 posts (`tests/test_eval_gate.py`) and fails the build if
 precision drops below a floor or hallucination goes over a ceiling. I checked it bites: turning
@@ -75,8 +63,7 @@ the location fix off fails it.
 
 **About the labels.** Claude drafted all 80 from the raw post text, never seeing parser output,
 following the rules in `evals/ANNOTATION.md`. I checked every one against the post. The LLM
-rungs also run on Claude, so a Claude draft could go easy on them. When those runs happen I'll
-look at the disagreements before trusting any gap.
+rungs also run on Claude, so a Claude draft could go easy on them.
 
 ## Other numbers
 
@@ -137,7 +124,7 @@ one box. Row count alone doesn't.
 ## Three loops, and only one of them has a user waiting
 
 ```
-INGEST — monthly, offline
+INGEST: monthly, offline
    HN Algolia API
          │   thread + top-level comments
          ▼
@@ -147,13 +134,13 @@ INGEST — monthly, offline
                                        ▼
                           normalize ──► Parquet ──► GCS
 
-SERVE — per request
+SERVE: per request
    Next.js (Cloud Run) ──HTTP──► FastAPI (Cloud Run)
                                      │  /api/jobs /api/trends /api/match /api/evals
                                      ▼
                           DuckDB in-process ──► Parquet in /tmp ◄── GCS on cold start
 
-EVAL — offline, on demand and in CI
+EVAL: offline, on demand and in CI
    labeled.jsonl ──► run.py ──► scorers ──► runs.jsonl ──► /evals page
 ```
 
@@ -238,9 +225,8 @@ run exits nonzero.
 
 The command writes `evals/cost-quality.md` and `evals/cost-quality.json`, replacing
 previous output. Use `--output PATH.md` (a `.md` suffix is required) to preserve separate runs.
-Each config has the same field rows, precision/95% Wilson notation, skills macro-F1,
-enum accuracy, and
-last-split hallucination column as the rules-baseline table above, plus total cost and
+Each config reports per-field precision with 95% Wilson intervals, skills macro-F1,
+enum accuracy and last-split hallucination, plus total cost and
 p50/p95 latency. JSON retains all existing scorer outputs, coverage, token counts,
 label IDs, pricing inputs, and errors. Scores are unweighted over the selected labels,
 matching the baseline's scoring convention; they are not population estimates.
