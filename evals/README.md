@@ -67,3 +67,42 @@ proportionally at n=60 the prose slice gets 8 posts and a ±26% interval — unu
 prose-vs-pipe comparison is the evidence the whole cost argument rests on. Hence n=80 with prose
 boosted to 20. Finding that out after six hours of labeling would have been expensive; finding
 it out from the sampler was free.
+
+## Fixed eval split
+
+[`splits.json`](splits.json) freezes the existing assignments from `labeled.jsonl` and
+`sample.json` (sampling seed `20260801`): **53 tune / 27 held-out**, covering all 80 IDs
+in `tests/eval_posts.json` exactly once. `dev` remains an alias for `tune`. The runner
+uses these ID lists rather than the labels' `split` metadata; do not redraw them after tuning.
+
+The previous tuning round looked at **all 80 posts**. The held-out set therefore overlaps
+posts seen during tuning and **is not a clean generalization estimate**. Use the tune set
+for future iteration; the all-post CI regression gate also still exposes held-out behavior.
+
+Tune IDs (53):
+
+46858476, 46858532, 46859629, 46859924, 46863917, 46869120, 46870506, 46875351,
+46888712, 46893914, 46959004, 47220091, 47220599, 47220965, 47220989, 47223968,
+47225525, 47229954, 47232351, 47241526, 47255238, 47256159, 47308369, 47603990,
+47605264, 47605460, 47609507, 47610945, 47614308, 47625506, 47632126, 47673074,
+47676433, 47975959, 47976872, 47979394, 47980297, 47986820, 48021354, 48023051,
+48102189, 48358258, 48362254, 48365334, 48376486, 48747987, 48749084, 48749443,
+48752786, 48787393, 48794583, 48804695, 48819370.
+
+Held-out IDs (27):
+
+46857494, 46857529, 46859342, 46861945, 46863837, 46873079, 46903595, 47221096,
+47224803, 47230726, 47249983, 47318659, 47603496, 47604760, 47614969, 47976662,
+47976769, 47978746, 48067640, 48357761, 48357775, 48357800, 48361945, 48365376,
+48372101, 48408853, 48750014.
+
+Score held-out only, with no API calls or run-history writes:
+
+```sh
+HN_RAW_DIR=/tmp/hn-eval-corpus .venv/bin/python evals/run.py --config rules --split held-out --dry-run
+```
+
+If `data/raw` is absent, rebuild a temporary corpus from `tests/eval_posts.json` using the
+corpus shape `{"comments": [{"objectID": id, "comment_text": html.escape(text)}]}` in a JSON
+file under `/tmp/hn-eval-corpus`. Escaping the text preserves literal angle brackets and
+entities through the runner's HTML-to-text conversion. No fetching is needed.

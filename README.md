@@ -42,8 +42,10 @@ their intervals, I call it noise and move on.
 
 ## Eval results, rules baseline
 
-80 labeled posts, split 53 dev / 27 held-out. I tuned against dev only. Held-out got looked at
-twice, once before the fix and once after, and that's it.
+80 labeled posts, fixed as 53 tune (alias: dev) / 27 held-out; see the
+[ID lists and split note](evals/README.md#fixed-eval-split). The previous tuning round looked at
+all 80 posts, so held-out overlaps posts seen during tuning and is not a clean generalization
+estimate. The table below records the earlier baseline.
 
 | Field      | Dev (n=53)            | Held-out (n=27)       | Halluc, held-out |
 | ---------- | --------------------- | --------------------- | ---------------: |
